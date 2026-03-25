@@ -180,6 +180,12 @@ header {
     background: #000;
 }
 
+@media (max-width: 768px) {
+    .scroll-container {
+        height: 300vh; /* Shorter scroll on mobile for better UX */
+    }
+}
+
 .sticky-wrapper {
     position: sticky;
     top: 0;
@@ -583,6 +589,28 @@ footer p {
 
     .card-content h3 {
         font-size: 1.5rem;
+    }
+
+    /* Chat Widget Mobile Fixes */
+    .chat-widget {
+        width: calc(100% - 40px);
+        right: 20px;
+        bottom: 90px;
+        height: 70vh;
+    }
+
+    .chat-trigger:hover {
+        width: 60px; /* Keep circular on mobile */
+    }
+
+    /* Header Nav Fixes */
+    .nav-right {
+        justify-content: flex-end;
+    }
+
+    .nav-cta {
+        padding: 6px 12px;
+        font-size: 0.8rem;
     }
 
     /* Disable mouse-glow on mobile */
