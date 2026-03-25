@@ -528,6 +528,17 @@ footer p {
     color: #fff !important;
 }
 
+.dev-tag a {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.dev-tag a:hover {
+    color: var(--secondary);
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+}
+
 .aurix-glow {
     color: var(--secondary);
     text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
