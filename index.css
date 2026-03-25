@@ -176,8 +176,14 @@ header {
 /* Scroll Animation Section */
 .scroll-container {
     position: relative;
-    height: 400vh;
+    height: 500vh; /* Increased to allow overlapping content */
     background: #000;
+}
+
+@media (max-width: 768px) {
+    .scroll-container {
+        height: 400vh; 
+    }
 }
 
 #loader-overlay {
@@ -262,19 +268,28 @@ header {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    filter: brightness(0.7); /* Slightly dimmed for content clarity */
+}
+
+/* Layer the site content over the animation */
+.page-content-wrapper {
+    position: relative;
+    z-index: 10;
+    margin-top: -100vh; /* Pulls the content up over the sticky canvas */
+    background: transparent;
 }
 
 .scroll-content {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 100%;
-    height: 100%;
     pointer-events: none;
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 10;
+    z-index: 5;
 }
 
 .scroll-title {
