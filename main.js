@@ -172,4 +172,92 @@ document.addEventListener('DOMContentLoaded', () => {
     chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
+
+    // --- Hero Scroll Animation ---
+    const canvas = document.getElementById('hero-canvas');
+    const context = canvas.getContext('2d');
+    const scrollContainer = document.querySelector('.scroll-container');
+    const scrollTitle = document.querySelector('.scroll-title');
+    
+    const frameCount = 120;
+    const currentFrame = index => (
+        `assets/sequence 1/ezgif-frame-${index.toString().padStart(3, '0')}.jpg`
+    );
+
+    const images = [];
+    const airship = { frame: 0 };
+
+    // Preload images
+    let loadedCount = 0;
+    for (let i = 1; i <= frameCount; i++) {
+        const img = new Image();
+        img.src = currentFrame(i);
+        img.onload = () => {
+            loadedCount++;
+            if (loadedCount === frameCount) {
+                render(); // Initial render
+            }
+        };
+        images.push(img);
+    }
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        render();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function render() {
+        const img = images[airship.frame];
+        if (!img || !img.complete) return;
+
+        // DrawImage with aspect-fill (cover)
+        const canvasAspect = canvas.width / canvas.height;
+        const imgAspect = img.width / img.height;
+        let drawWidth, drawHeight, offsetX, offsetY;
+
+        if (canvasAspect > imgAspect) {
+            drawWidth = canvas.width;
+            drawHeight = canvas.width / imgAspect;
+            offsetX = 0;
+            offsetY = (canvas.height - drawHeight) / 2;
+        } else {
+            drawHeight = canvas.height;
+            drawWidth = canvas.height * imgAspect;
+            offsetX = (canvas.width - drawWidth) / 2;
+            offsetY = 0;
+        }
+
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+    }
+
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const maxScrollTop = scrollContainer.offsetHeight - window.innerHeight;
+        const scrollFraction = Math.max(0, Math.min(1, scrollTop / maxScrollTop));
+        
+        const frameIndex = Math.min(
+            frameCount - 1,
+            Math.floor(scrollFraction * frameCount)
+        );
+
+        // Update Frame
+        if (airship.frame !== frameIndex) {
+            airship.frame = frameIndex;
+            requestAnimationFrame(render);
+        }
+
+        // Title Animation
+        if (scrollFraction > 0.2 && scrollFraction < 0.8) {
+            scrollTitle.style.opacity = '1';
+            scrollTitle.style.transform = 'translateY(0)';
+        } else {
+            scrollTitle.style.opacity = '0';
+            scrollTitle.style.transform = 'translateY(50px)';
+        }
+    });
 });

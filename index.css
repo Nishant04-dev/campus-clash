@@ -173,6 +173,62 @@ header {
     box-shadow: 0 0 20px rgba(255, 0, 76, 0.5);
 }
 
+/* Scroll Animation Section */
+.scroll-container {
+    position: relative;
+    height: 400vh;
+    background: #000;
+}
+
+.sticky-wrapper {
+    position: sticky;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#hero-canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.scroll-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.scroll-title {
+    font-size: 8rem;
+    font-weight: 900;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(50px);
+    transition: all 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+    color: white;
+    text-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+    letter-spacing: -5px;
+}
+
+@media (max-width: 768px) {
+    .scroll-title {
+        font-size: 3rem;
+        letter-spacing: -1px;
+    }
+}
+
 /* Hero */
 .hero {
     padding: 60px 0;
