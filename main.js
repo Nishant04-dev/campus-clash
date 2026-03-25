@@ -87,8 +87,85 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, observerOptions);
 
-    document.querySelectorAll('section, .game-card, .hero-poster').forEach(el => {
-        el.classList.add('reveal-on-scroll');
-        observer.observe(el);
+    // Lumiere AI Chat Integration
+    const chatWidget = document.getElementById('ai-chat-widget');
+    const chatTrigger = document.getElementById('open-chat');
+    const closeChat = document.getElementById('close-chat');
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-chat');
+    const chatMessages = document.getElementById('chat-messages');
+
+    const API_KEY = 'lum-53d57ae849f739130f251b0b2422e796f4f81f01ef46721f';
+    const ENDPOINT = 'https://hpgljlicaqhesbnjwjab.supabase.co/functions/v1/lumiere-api';
+
+    let messageHistory = [
+        { role: 'assistant', content: "Hello! I'm Lumiere AI. How can I help you with your Campus Clash registration?" }
+    ];
+
+    chatTrigger.addEventListener('click', () => {
+        chatWidget.classList.add('active');
+        chatTrigger.style.display = 'none';
+        chatInput.focus();
+    });
+
+    closeChat.addEventListener('click', () => {
+        chatWidget.classList.remove('active');
+        chatTrigger.style.display = 'flex';
+    });
+
+    async function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        // Add user message to UI
+        addMessage(text, 'user');
+        chatInput.value = '';
+        messageHistory.push({ role: 'user', content: text });
+
+        // Add loading state
+        const loadingMsg = addMessage('Lumiere is thinking...', 'bot loading');
+
+        try {
+            const response = await fetch(ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    messages: messageHistory,
+                    mode: 'chat'
+                })
+            });
+
+            if (!response.ok) throw new Error('API request failed');
+
+            const data = await response.json();
+            const botResponse = data.choices?.[0]?.message?.content || data.reply || "I'm sorry, I couldn't process that.";
+
+            // Remove loading and add bot response
+            loadingMsg.remove();
+            addMessage(botResponse, 'bot');
+            messageHistory.push({ role: 'assistant', content: botResponse });
+
+        } catch (error) {
+            console.error('Chat Error:', error);
+            loadingMsg.textContent = "Sorry, I'm having trouble connecting right now. Please try again later.";
+            loadingMsg.classList.remove('loading');
+        }
+    }
+
+    function addMessage(text, type) {
+        const div = document.createElement('div');
+        div.className = `message ${type}`;
+        div.textContent = text;
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return div;
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
     });
 });
