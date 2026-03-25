@@ -178,30 +178,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const context = canvas.getContext('2d');
     const scrollContainer = document.querySelector('.scroll-container');
     const scrollTitle = document.querySelector('.scroll-title');
+    const loaderOverlay = document.getElementById('loader-overlay');
+    const loaderBar = document.getElementById('loader-bar');
+    const loaderText = document.getElementById('loader-text');
     
     const frameCount = 120;
-    const currentFrame = index => (
+    const currentFrameURL = index => (
         `assets/sequence 1/ezgif-frame-${index.toString().padStart(3, '0')}.jpg`
     );
 
     const images = [];
-    const airship = { frame: 0 };
+    let airship = { frame: 0, targetFrame: 0 };
 
-    // Preload images
+    // Preload images with progress reporting
     let loadedCount = 0;
     for (let i = 1; i <= frameCount; i++) {
         const img = new Image();
-        img.src = currentFrame(i);
+        img.src = currentFrameURL(i);
         img.onload = () => {
             loadedCount++;
+            const progress = Math.round((loadedCount / frameCount) * 100);
+            loaderBar.style.width = `${progress}%`;
+            loaderText.textContent = `PRELOADING ASSETS... ${progress}%`;
+            
             if (loadedCount === frameCount) {
-                render(); // Initial render
+                setTimeout(() => {
+                    loaderOverlay.classList.add('fade-out');
+                    render(); // Initial render
+                    requestAnimationFrame(animate); // Start smooth loop
+                }, 500);
             }
         };
         images.push(img);
     }
 
     function resizeCanvas() {
+        if (!canvas) return;
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         render();
@@ -211,10 +223,10 @@ document.addEventListener('DOMContentLoaded', () => {
     resizeCanvas();
 
     function render() {
-        const img = images[airship.frame];
+        const frameIdx = Math.max(0, Math.min(frameCount - 1, Math.round(airship.frame)));
+        const img = images[frameIdx];
         if (!img || !img.complete) return;
 
-        // DrawImage with aspect-fill (cover)
         const canvasAspect = canvas.width / canvas.height;
         const imgAspect = img.width / img.height;
         let drawWidth, drawHeight, offsetX, offsetY;
@@ -235,21 +247,29 @@ document.addEventListener('DOMContentLoaded', () => {
         context.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
     }
 
+    // Smooth Interpolation (Lerp)
+    function animate() {
+        const lerpFactor = 0.1;
+        const diff = airship.targetFrame - airship.frame;
+        
+        if (Math.abs(diff) > 0.01) {
+            airship.frame += diff * lerpFactor;
+            render();
+        }
+        requestAnimationFrame(animate);
+    }
+
     window.addEventListener('scroll', () => {
         const scrollTop = window.scrollY;
-        const maxScrollTop = scrollContainer.offsetHeight - window.innerHeight;
-        const scrollFraction = Math.max(0, Math.min(1, scrollTop / maxScrollTop));
+        const containerOffset = scrollContainer.offsetTop;
+        const containerHeight = scrollContainer.offsetHeight;
         
-        const frameIndex = Math.min(
-            frameCount - 1,
-            Math.floor(scrollFraction * frameCount)
-        );
-
-        // Update Frame
-        if (airship.frame !== frameIndex) {
-            airship.frame = frameIndex;
-            requestAnimationFrame(render);
-        }
+        // Calculate progress relative to the scroll container
+        const relativeScroll = scrollTop - containerOffset;
+        const maxScroll = containerHeight - window.innerHeight;
+        const scrollFraction = Math.max(0, Math.min(1, relativeScroll / maxScroll));
+        
+        airship.targetFrame = scrollFraction * (frameCount - 1);
 
         // Title Animation
         if (scrollFraction > 0.2 && scrollFraction < 0.8) {
