@@ -105,6 +105,37 @@
         </div>
     </footer>
 
+    <!-- Lumiere AI Chat Widget -->
+    <div id="ai-chat-widget" class="chat-widget">
+        <div class="chat-header">
+            <div class="chat-title">
+                <span class="lumiere-logo">L</span>
+                <span>Lumiere AI Assistant</span>
+            </div>
+            <button id="close-chat" class="close-btn">&times;</button>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+            <div class="message bot">
+                Hello! I'm Lumiere AI. How can I help you with your Campus Clash registration?
+            </div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="Type your message..." autocomplete="off">
+            <button id="send-chat" class="send-btn">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="chat-credit">
+            Powered by <a href="https://lumiereai.nishantdev.in/" target="_blank">Lumiere AI</a>
+        </div>
+    </div>
+    <button id="open-chat" class="chat-trigger" title="Ask Lumiere AI">
+        <span class="lumiere-logo">L</span>
+        <span class="trigger-text">ASK AI</span>
+    </button>
+
     <script src="main.js"></script>
 </body>
 
