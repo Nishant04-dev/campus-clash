@@ -1,0 +1,20 @@
+{
+  "name": "campus-clash",
+  "version": "1.0.0",
+  "description": "Campus Clash Tournament Website",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server -p 8080",
+    "start": "npx http-server -p 8080"
+  },
+  "keywords": [
+    "esports",
+    "tournament",
+    "campus-clash"
+  ],
+  "author": "Aurix Development",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
