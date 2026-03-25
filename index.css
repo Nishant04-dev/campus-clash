@@ -119,10 +119,19 @@ header {
     filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
     transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     cursor: pointer;
+    background: white; /* Ensure white background is consistent if blend fails */
+    border-radius: 8px;
+    padding: 5px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+/* If the logo has a hard white box, we can try to make it look like a floating card */
+.logo-center {
+    perspective: 1000px;
 }
 
 .cu-logo-large:hover {
-    transform: scale(1.15) rotate(2deg);
+    transform: scale(1.1) rotateY(10deg);
     filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.5));
 }
 

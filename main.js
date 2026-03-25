@@ -98,9 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_KEY = 'lum-53d57ae849f739130f251b0b2422e796f4f81f01ef46721f';
     const ENDPOINT = 'https://hpgljlicaqhesbnjwjab.supabase.co/functions/v1/lumiere-api';
 
-    let messageHistory = [
-        { role: 'assistant', content: "Hello! I'm Lumiere AI. How can I help you with your Campus Clash registration?" }
-    ];
+    // Start with an empty history for the API, but keep UI greeting
+    let messageHistory = [];
 
     chatTrigger.addEventListener('click', () => {
         chatWidget.classList.add('active');
@@ -128,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(ENDPOINT, {
                 method: 'POST',
+                mode: 'cors',
                 headers: {
                     'Authorization': `Bearer ${API_KEY}`,
                     'Content-Type': 'application/json'
@@ -138,7 +138,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             });
 
-            if (!response.ok) throw new Error('API request failed');
+            if (response.status === 502) {
+                throw new Error('Server (502) error. The AI model might be temporarily unavailable.');
+            }
+
+            if (!response.ok) throw new Error(`API request failed with status: ${response.status}`);
 
             const data = await response.json();
             const botResponse = data.choices?.[0]?.message?.content || data.reply || "I'm sorry, I couldn't process that.";
