@@ -93,14 +93,45 @@ header {
     align-items: center;
 }
 
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.cu-logo {
+    height: 40px;
+    width: auto;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+    transition: transform 0.3s ease;
+}
+
+.cu-logo:hover {
+    transform: scale(1.1);
+}
+
+.logo-divider {
+    width: 1px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
 .campus-text {
     font-weight: 900;
     letter-spacing: 2px;
-    font-size: 1.1rem;
-    background: linear-gradient(90deg, #fff, var(--secondary));
+    font-size: 1.2rem;
+    background: linear-gradient(90deg, #fff, var(--secondary), var(--primary));
+    background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    animation: gradientText 3s linear infinite;
+}
+
+@keyframes gradientText {
+    0% { background-position: 0% center; }
+    50% { background-position: 100% center; }
+    100% { background-position: 0% center; }
 }
 
 .nav-cta {
@@ -153,6 +184,21 @@ header {
     background: radial-gradient(circle, rgba(255, 0, 76, 0.2) 0%, transparent 60%);
     z-index: -1;
     filter: blur(40px);
+    animation: pulseGlow 4s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.05); }
+}
+
+.hero-poster {
+    animation: floating 6s ease-in-out infinite;
+}
+
+@keyframes floating {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
 }
 
 .hero-content h1 {
@@ -329,17 +375,51 @@ footer p {
     text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
 }
 
-.organized-by {
-    margin-top: 30px;
+.footer-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 40px;
 }
 
-.organized-by span {
+.badge-label {
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.badge-text {
     font-weight: 900;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     font-size: 0.7rem;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 5px 15px;
+    padding: 6px 15px;
     border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    display: inline-block;
+    margin: 0 5px 10px;
+    transition: all 0.3s ease;
+}
+
+.badge-text:hover {
+    border-color: var(--secondary);
+    background: rgba(0, 242, 255, 0.1);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.elevation {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.elevation:hover {
+    border-color: var(--primary);
+    background: rgba(255, 0, 76, 0.1);
+    box-shadow: 0 0 15px rgba(255, 0, 76, 0.2);
 }
 
 /* Animations */

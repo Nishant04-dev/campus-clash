@@ -1,10 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Mouse Glow following
+    // Mouse Glow following with smooth lag and dynamic size
     const mouseGlow = document.querySelector('.mouse-glow');
+    let mouseX = 0, mouseY = 0;
+    let glowX = 0, glowY = 0;
+
     document.addEventListener('mousemove', (e) => {
-        mouseGlow.style.left = e.clientX + 'px';
-        mouseGlow.style.top = e.clientY + 'px';
+        mouseX = e.clientX;
+        mouseY = e.clientY;
     });
+
+    function animateGlow() {
+        // Smooth interpolation (lerp)
+        glowX += (mouseX - glowX) * 0.1;
+        glowY += (mouseY - glowY) * 0.1;
+        
+        mouseGlow.style.left = glowX + 'px';
+        mouseGlow.style.top = glowY + 'px';
+        
+        requestAnimationFrame(animateGlow);
+    }
+    animateGlow();
 
     // Detect Touch Device
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -21,14 +37,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
                 
-                const rotateX = (y - centerY) / 10;
-                const rotateY = (centerX - x) / 10;
+                const rotateX = (y - centerY) / 8; // Slightly more tilt
+                const rotateY = (centerX - x) / 8;
                 
-                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.07, 1.07, 1.07)`;
             });
             
             card.addEventListener('mouseleave', () => {
+                card.style.transition = 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)';
                 card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+                setTimeout(() => {
+                    card.style.transition = '';
+                }, 500);
             });
         });
     } else {
