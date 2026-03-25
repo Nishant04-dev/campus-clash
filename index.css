@@ -76,11 +76,12 @@ body {
 
 /* Header */
 header {
-    height: 80px;
+    height: 120px;
     display: flex;
     align-items: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(20px);
+    background: rgba(10, 10, 12, 0.8);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -93,39 +94,49 @@ header {
     align-items: center;
 }
 
-.logo {
+.logo-left {
+    flex: 1;
     display: flex;
     align-items: center;
-    gap: 15px;
 }
 
-.cu-logo {
-    height: 40px;
+.logo-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nav-right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.cu-logo-large {
+    height: 90px;
     width: auto;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
-    transition: transform 0.3s ease;
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
 }
 
-.cu-logo:hover {
-    transform: scale(1.1);
-}
-
-.logo-divider {
-    width: 1px;
-    height: 30px;
-    background: rgba(255, 255, 255, 0.2);
+.cu-logo-large:hover {
+    transform: scale(1.15) rotate(2deg);
+    filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.5));
 }
 
 .campus-text {
     font-weight: 900;
     letter-spacing: 2px;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     background: linear-gradient(90deg, #fff, var(--secondary), var(--primary));
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: gradientText 3s linear infinite;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
 @keyframes gradientText {
@@ -446,8 +457,16 @@ footer p {
 
 @media (max-width: 768px) {
     header {
-        height: 60px;
+        height: 100px;
         padding: 0 10px;
+    }
+
+    .cu-logo-large {
+        height: 60px;
+    }
+
+    .campus-text {
+        font-size: 1rem;
     }
 
     .container {
