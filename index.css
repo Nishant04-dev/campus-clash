@@ -256,15 +256,15 @@ header {
 }
 
 .valorant .card-bg {
-    background-image: linear-gradient(to top, var(--bg-dark), transparent), url('https://images.unsplash.com/photo-1624138784614-87fd1b6528f8?q=80&w=1000&auto=format&fit=crop');
+    background-image: linear-gradient(to top, var(--bg-dark), transparent), url('assets/VALORANT.jpg');
 }
 
 .bgmi .card-bg {
-    background-image: linear-gradient(to top, var(--bg-dark), transparent), url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1000&auto=format&fit=crop');
+    background-image: linear-gradient(to top, var(--bg-dark), transparent), url('assets/Bgmi.jpg');
 }
 
 .freefire .card-bg {
-    background-image: linear-gradient(to top, var(--bg-dark), transparent), url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1000&auto=format&fit=crop');
+    background-image: linear-gradient(to top, var(--bg-dark), transparent), url('assets/free%20fire.jpg');
 }
 
 .card-content {
