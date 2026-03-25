@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error(`API request failed with status: ${response.status}`);
 
             const data = await response.json();
-            const botResponse = data.choices?.[0]?.message?.content || data.reply || "I'm sorry, I couldn't process that.";
+            const botResponse = data.content || data.choices?.[0]?.message?.content || data.reply || "I'm sorry, I couldn't process that.";
 
             // Remove loading and add bot response
             loadingMsg.remove();
