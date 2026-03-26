@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | Campus Clash</title>
+    <link rel="stylesheet" href="styles/global.css">
+    <link rel="icon" href="assets/nav-logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <div class="background-overlay"></div>
+    <div id="navbar"></div>
+
+    <main class="page-container">
+        <div class="page-header">
+            <h1>MY PROFILE</h1>
+            <p>Manage your account and view your tournament registrations</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Profile Information</h2>
+            </div>
+            <div class="profile-card">
+                <div class="profile-avatar" id="avatar">?</div>
+                <div class="profile-info">
+                    <h2 id="user-name">Loading...</h2>
+                    <p id="user-email">...</p>
+                    <span class="profile-badge" id="user-role">User</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Edit Profile</h2>
+            </div>
+            <form id="profile-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" name="name" id="input-name" placeholder="Your name">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" name="phone" id="input-phone" placeholder="+91 XXXXX XXXXX">
+                    </div>
+                    <div class="form-group">
+                        <label>In-Game ID</label>
+                        <input type="text" name="game_id" id="input-game-id" placeholder="Your game ID">
+                    </div>
+                    <div class="form-group">
+                        <label>University / College</label>
+                        <input type="text" name="university" id="input-university" placeholder="Your institution">
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="button" class="btn btn-danger" id="logout-btn">Logout</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">My Registrations</h2>
+            </div>
+            <div id="registrations-list">
+                <div class="empty-state">Loading your registrations...</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="env.js"></script>
+    <script src="components/navbar.js"></script>
+    <script type="module">
+        import { initModals } from './components/modals.js';
+        initModals();
+    </script>
+    <script type="module">
+        import { authService } from './src/services/authService.js';
+        import { registrationService } from './src/services/registrationService.js';
+
+        async function loadProfile() {
+            const user = await authService.getCurrentUser();
+            
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const userName = user.user_metadata?.name || user.profile?.name || 'User';
+            document.getElementById('user-name').textContent = userName;
+            document.getElementById('user-email').textContent = user.email;
+            document.getElementById('user-role').textContent = user.profile?.role || 'User';
+            document.getElementById('avatar').textContent = userName.charAt(0).toUpperCase();
+
+            document.getElementById('input-name').value = user.profile?.name || user.user_metadata?.name || '';
+            document.getElementById('input-phone').value = user.profile?.phone || '';
+            document.getElementById('input-game-id').value = user.profile?.game_id || '';
+            document.getElementById('input-university').value = user.profile?.university || '';
+
+            await loadRegistrations();
+        }
+
+        async function loadRegistrations() {
+            const container = document.getElementById('registrations-list');
+            
+            const { data, error } = await registrationService.getByUserId();
+            
+            if (error) {
+                container.innerHTML = '<div class="empty-state">Error loading registrations</div>';
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        No registrations yet. <a href="tournaments.html">Join a tournament!</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = data.map(reg => `
+                <div class="registration-item">
+                    <img src="${reg.tournaments?.banner_url || 'assets/VALORANT.jpg'}" alt="${reg.tournaments?.title}">
+                    <div class="registration-details">
+                        <h3>${reg.tournaments?.title || 'Tournament'}</h3>
+                        <p>${reg.tournaments?.game} - ${reg.tournaments?.mode?.toUpperCase() || 'SQUAD'}</p>
+                        <div class="registration-meta">
+                            <span>Prize: ${reg.tournaments?.prize_pool || 'TBA'}</span>
+                            <span>Registered: ${new Date(reg.created_at).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <span class="status-badge status-${reg.verification_status}">${reg.verification_status}</span>
+                    ${reg.verification_status === 'pending' ? `
+                        <button class="btn-small" onclick="cancelRegistration('${reg.id}')">Cancel</button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const updates = Object.fromEntries(formData);
+            
+            const btn = e.target.querySelector('.btn-primary');
+            btn.textContent = 'Saving...';
+            btn.disabled = true;
+
+            const { error } = await authService.updateProfile(updates);
+            
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                alert('Profile updated successfully!');
+            }
+            
+            btn.textContent = 'Save Changes';
+            btn.disabled = false;
+        });
+
+        window.cancelRegistration = async (id) => {
+            if (!confirm('Are you sure you want to cancel this registration?')) return;
+            
+            const { error } = await registrationService.cancelRegistration(id);
+            
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                await loadRegistrations();
+                alert('Registration cancelled.');
+            }
+        };
+
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await authService.signOut();
+            window.location.href = 'index.html';
+        });
+
+        loadProfile();
+    </script>
+</body>
+</html>

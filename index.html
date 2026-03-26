@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Campus Clash | Tournament</title>
+    <link rel="stylesheet" href="styles/global.css">
+    <link rel="icon" href="assets/nav-logo.png">
     <link rel="stylesheet" href="index.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,22 +17,9 @@
 
 <body>
     <div class="background-overlay"></div>
-    <div class="noise-overlay"></div>
     <div class="mouse-glow"></div>
 
-    <header>
-        <div class="container h-container">
-            <div class="logo-left">
-                <span class="campus-text">CAMPUS CLASH</span>
-            </div>
-            <div class="logo-center">
-                <img src="assets/chandigarh_university_logo.jpg.jpeg" alt="Chandigarh University" class="cu-logo-large">
-            </div>
-            <nav class="nav-right">
-                <a href="#register" class="nav-cta">Register Now</a>
-            </nav>
-        </div>
-    </header>
+    <div id="navbar"></div>
 
     <main>
         <section class="scroll-container">
@@ -45,9 +34,9 @@
             </div>
             <div class="sticky-wrapper">
                 <canvas id="hero-canvas"></canvas>
-            </div>
-            <div class="scroll-content">
-                <h1 class="scroll-title">EXPERIENCE THE CLASH</h1>
+                <div class="scroll-content">
+                    <h1 class="scroll-title">EXPERIENCE THE CLASH</h1>
+                </div>
             </div>
         </section>
 
@@ -55,15 +44,14 @@
             <section class="hero">
             <div class="container text-center">
                 <div class="hero-image-container">
-                    <!-- The user will replace this with their actual image -->
                     <img src="assets/nav-logo.png" alt="Campus Clash Tournament" class="hero-poster">
                     <div class="hero-glow"></div>
                 </div>
                 <div class="hero-content">
-                    <p class="season-badge">SEASON 1</p>
+                    <p class="season-badge" id="season-badge">SEASON 1</p>
                     <div class="prize-pool">
                         <span>PRIZE POOL</span>
-                        <h2>XX,XXX INR</h2>
+                        <h2 id="prize-pool-display">XX,XXX INR</h2>
                     </div>
                 </div>
             </div>
@@ -72,7 +60,7 @@
         <section id="register" class="registration">
             <div class="container">
                 <h2 class="section-title">CHOOSE YOUR BATTLE</h2>
-                <div class="game-grid">
+                <div class="game-grid" id="game-grid">
                     <div class="game-card valorant">
                         <div class="card-bg"></div>
                         <div class="card-content">
@@ -100,32 +88,29 @@
                 </div>
             </div>
         </section>
-        <!-- The page-content-wrapper will close after the footer -->
 
-    <footer>
-        <div class="container text-center">
-            <p>&copy; 2026 CAMPUS CLASH. ALL RIGHTS RESERVED.</p>
-            <p class="dev-tag">DEVELOPED BY <a href="https://aurixdevelopment.in/" target="_blank" class="aurix-glow">AURIX DEVELOPMENT</a> & <a href="https://www.nishantdev.in/" target="_blank" class="aurix-glow">Nishant Chauhan</a></p>
-            <div class="footer-badges">
-                <div class="organized-by">
-                    <p class="badge-label">ORGANIZE BY</p>
-                    <span class="badge-text">Diractor of Sports</span>
-                    <span class="badge-text">Esport & mind game Clube</span>
+        <footer class="footer">
+            <div class="container text-center">
+                <p>&copy; 2026 CAMPUS CLASH. ALL RIGHTS RESERVED.</p>
+                <p class="dev-tag">DEVELOPED BY <a href="https://aurixdevelopment.in/" target="_blank" class="aurix-glow">AURIX DEVELOPMENT</a> & <a href="https://www.nishantdev.in/" target="_blank" class="aurix-glow">Nishant Chauhan</a></p>
+                <div class="footer-badges">
+                    <div class="organized-by">
+                        <p class="badge-label">ORGANIZE BY</p>
+                        <span class="badge-text">Diractor of Sports</span>
+                        <span class="badge-text">Esport & mind game Clube</span>
+                    </div>
+                    <div class="partner">
+                        <p class="badge-label">PARTNER</p>
+                        <span class="badge-text">Elevation Esports</span>
+                    </div>
+                    <div class="co-organized">
+                        <p class="badge-label">CO-ORGANIZED BY</p>
+                        <span class="badge-text">Vanguard India Gaming</span>
+                    </div>
                 </div>
-                <div class="partner">
-                    <p class="badge-label">PARTNER</p>
-                    <span class="badge-text elevation">Elevation Esports</span>
-                </div>
-                <div class="co-organized">
-                    <p class="badge-label">CO-ORGANIZED BY</p>
-                    <span class="badge-text">Vanguard India Gaming</span>
-                </div>
-            </div>
-        </div>
             </div>
         </footer>
     </div>
-</main>
 
     <!-- Lumiere AI Chat Widget -->
     <div id="ai-chat-widget" class="chat-widget">
@@ -158,7 +143,13 @@
         <span class="trigger-text">ASK AI</span>
     </button>
 
-    <script src="main.js"></script>
+    <script src="env.js"></script>
+    <script src="components/navbar.js"></script>
+    <script type="module">
+        import { initModals } from './components/modals.js';
+        initModals();
+    </script>
+    <script type="module" src="main.js"></script>
 </body>
 
 </html>

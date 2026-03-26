@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournaments | Campus Clash</title>
+    <link rel="stylesheet" href="styles/global.css">
+    <link rel="icon" href="assets/nav-logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <div class="background-overlay"></div>
+    <div id="navbar"></div>
+
+    <main class="page-container">
+        <div class="page-header">
+            <div class="container">
+                <h1>TOURNAMENTS</h1>
+                <p>Choose your battle and compete for glory</p>
+                
+                <div class="filter-bar">
+                    <button class="filter-btn active" data-filter="all">All Tournaments</button>
+                    <button class="filter-btn" data-filter="upcoming">Upcoming</button>
+                    <button class="filter-btn" data-filter="ongoing">Ongoing</button>
+                    <button class="filter-btn" data-filter="completed">Past</button>
+                </div>
+                
+                <div class="game-filter">
+                    <button class="game-btn active" data-game="all">All Games</button>
+                    <button class="game-btn" data-game="valorant">Valorant</button>
+                    <button class="game-btn" data-game="bgmi">BGMI</button>
+                    <button class="game-btn" data-game="free fire">Free Fire</button>
+                </div>
+            </div>
+        </div>
+
+        <section class="tournaments-section">
+            <div class="container">
+                <div id="tournaments-list">
+                    <div class="loading" style="text-align:center;padding:60px;color:var(--text-dim)">Loading tournaments...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container text-center">
+            <p>&copy; 2026 CAMPUS CLASH. ALL RIGHTS RESERVED.</p>
+            <p class="dev-tag">DEVELOPED BY <a href="https://aurixdevelopment.in/" target="_blank" class="aurix-glow">AURIX DEVELOPMENT</a></p>
+        </div>
+    </footer>
+
+
+    <script src="env.js"></script>
+    <script src="components/navbar.js"></script>
+    <script type="module">
+        import { initModals } from './components/modals.js';
+        initModals();
+    </script>
+    <script type="module">
+        import { tournamentService } from './src/services/tournamentService.js';
+        import { registrationService } from './src/services/registrationService.js';
+        import { authService } from './src/services/authService.js';
+
+        let allTournaments = [];
+        let currentFilter = 'all';
+        let currentGame = 'all';
+
+        async function loadTournaments() {
+            const { data, error } = await tournamentService.getAll();
+            if (error) {
+                document.getElementById('tournaments-list').innerHTML = '<div class="empty-state"><h3>Error loading tournaments</h3><p>Please try again later.</p></div>';
+                return;
+            }
+            allTournaments = data || [];
+            filterTournaments();
+        }
+
+        function filterTournaments() {
+            let filtered = allTournaments;
+            if (currentFilter !== 'all') filtered = filtered.filter(t => t.status === currentFilter);
+            if (currentGame !== 'all') filtered = filtered.filter(t => t.game?.toLowerCase().includes(currentGame));
+            renderTournaments(filtered);
+        }
+
+        function renderTournaments(tournaments) {
+            const container = document.getElementById('tournaments-list');
+            if (tournaments.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>No Tournaments Found</h3><p>No tournaments available.</p></div>';
+                return;
+            }
+            container.innerHTML = tournaments.map(t => `
+                <div class="tournament-card">
+                    <div class="tournament-banner" style="background-image: linear-gradient(to top, rgba(0,0,0,0.8), transparent), url('${t.banner_url || 'assets/VALORANT.jpg'}')">
+                        <span class="tournament-status status-${t.status}">${t.status || 'upcoming'}</span>
+                    </div>
+                    <div class="tournament-info">
+                        <div>
+                            <h3>${t.title}</h3>
+                            <div class="tournament-meta">
+                                <div class="meta-item"><span>Game:</span> ${t.game}</div>
+                                <div class="meta-item"><span>Mode:</span> ${t.mode?.toUpperCase() || 'SQUAD'}</div>
+                                <div class="meta-item"><span>Date:</span> ${t.start_date ? new Date(t.start_date).toLocaleDateString() : 'TBA'}</div>
+                            </div>
+                            <p class="tournament-desc">${t.description || t.game + ' tournament. Compete with the best!'}</p>
+                        </div>
+                        <div class="tournament-footer">
+                            <span class="prize-badge">${t.prize_pool || 'Prize TBA'}</span>
+                            <button class="btn btn-primary" onclick="window.openReg('${t.id}', '${t.title}', '${t.registration_link || ''}', '${t.game}', '${t.mode}')">Register Now</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                filterTournaments();
+            });
+        });
+
+        document.querySelectorAll('.game-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.game-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentGame = btn.dataset.game;
+                filterTournaments();
+            });
+        });
+
+        loadTournaments();
+    </script>
+</body>
+</html>

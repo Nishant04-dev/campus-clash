@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | Campus Clash</title>
+    <link rel="stylesheet" href="styles/global.css">
+    <link rel="icon" href="assets/nav-logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <div class="background-overlay"></div>
+    <div id="navbar"></div>
+
+    <main class="page-container">
+        <div class="page-header">
+            <div class="container">
+                <h1 id="page-title">About Campus Clash</h1>
+                <p id="page-subtitle">The Ultimate Esports Tournament Experience</p>
+            </div>
+        </div>
+
+        <section class="about-section">
+            <div class="container">
+                <div class="about-grid">
+                    <div class="about-content">
+                        <h3 id="section1-subtitle">Our Mission</h3>
+                        <h2 id="section1-title">Building the Future of Campus Gaming</h2>
+                        <p id="section1-content">Campus Clash brings together the best esports talent from colleges across India. We provide a platform for gamers to showcase their skills, compete at the highest level, and connect with fellow esports enthusiasts.</p>
+                        <div class="stats-row">
+                            <div class="stat-item">
+                                <div class="number">500+</div>
+                                <div class="label">Players</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="number">50+</div>
+                                <div class="label">Colleges</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="number">₹1L+</div>
+                                <div class="label">Prize Pool</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="about-image">
+                        <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600" alt="Esports Gaming">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="about-section">
+            <div class="container">
+                <div class="about-grid" style="direction: rtl;">
+                    <div class="about-content" style="direction: ltr;">
+                        <h3>Our Story</h3>
+                        <h2>From Humble Beginnings</h2>
+                        <p>Started in 2024, Campus Clash has grown to become one of the most anticipated esports events in North India. What began as a small college tournament has transformed into a grand celebration of competitive gaming.</p>
+                    </div>
+                    <div class="about-image" style="direction: ltr;">
+                        <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600" alt="Gaming Setup">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="sponsors-section">
+            <div class="container">
+                <h2>Our Partners</h2>
+                <div class="sponsors-grid" id="sponsors-grid">
+                    <div class="sponsor-logo">Elevation Esports</div>
+                    <div class="sponsor-logo">Vanguard Gaming</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="about-section">
+            <div class="container">
+                <h2 style="text-align:center; margin-bottom:40px;">Meet the Team</h2>
+                <div class="team-preview" id="team-grid"></div>
+                <div style="text-align:center; margin-top:40px;">
+                    <a href="team.html" class="btn btn-primary">View Full Team</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container text-center">
+            <p>&copy; 2026 CAMPUS CLASH. ALL RIGHTS RESERVED.</p>
+            <p class="dev-tag">DEVELOPED BY <a href="https://aurixdevelopment.in/" target="_blank" class="aurix-glow">AURIX DEVELOPMENT</a></p>
+        </div>
+    </footer>
+
+    <script src="env.js"></script>
+    <script src="components/navbar.js"></script>
+    <script type="module">
+        import { initModals } from './components/modals.js';
+        initModals();
+    </script>
+    <script type="module">
+        import { contentService } from './src/services/contentService.js';
+
+        async function loadContent() {
+            const { data: aboutSections } = await contentService.getAboutContent();
+            if (aboutSections) {
+                aboutSections.forEach((section, index) => {
+                    const prefix = `section${index + 1}`;
+                    const titleEl = document.getElementById(`${prefix}-title`);
+                    const subtitleEl = document.getElementById(`${prefix}-subtitle`);
+                    const contentEl = document.getElementById(`${prefix}-content`);
+                    if (titleEl && section.title) titleEl.textContent = section.title;
+                    if (subtitleEl && section.subtitle) subtitleEl.textContent = section.subtitle;
+                    if (contentEl && section.content) contentEl.textContent = section.content;
+                });
+            }
+
+            const { data: team } = await contentService.getTeamMembers();
+            const teamGrid = document.getElementById('team-grid');
+            if (team && team.length > 0) {
+                teamGrid.innerHTML = team.map(member => `
+                    <div class="team-card">
+                        <h4>${member.name}</h4>
+                        <p style="color:var(--secondary);">${member.designation || member.role}</p>
+                    </div>
+                `).join('');
+            }
+
+            const { data: sponsors } = await contentService.getSponsors();
+            const sponsorsGrid = document.getElementById('sponsors-grid');
+            if (sponsors && sponsors.length > 0) {
+                sponsorsGrid.innerHTML = sponsors.map(s => `<div class="sponsor-logo">${s.name}</div>`).join('');
+            }
+        }
+
+        loadContent();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Campus Clash</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #ff004c; --secondary: #00f2ff; --bg: #0a0a0c; --card: #16161a; --text: #ffffff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        
+        .login-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .login-card { background: var(--card); padding: 3rem; border-radius: 1.5rem; border: 1px solid rgba(255,255,255,0.05); width: 100%; max-width: 400px; text-align: center; }
+        .login-card h1 { color: var(--primary); margin-bottom: 2rem; font-weight: 900; }
+        .login-card input { width: 100%; padding: 1rem; margin-bottom: 1.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.8rem; color: white; box-sizing: border-box; font-family: inherit; }
+        .login-card .btn { width: 100%; padding: 1rem; background: var(--primary); border: none; border-radius: 0.8rem; color: white; font-weight: 700; cursor: pointer; transition: 0.3s; font-family: inherit; }
+        .login-card .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,0,76,0.2); }
+        .login-card .error { color: #ff4444; font-size: 0.8rem; margin-top: 1rem; display: none; }
+        .login-card .back-link { display: block; margin-top: 1.5rem; color: var(--secondary); text-decoration: none; font-size: 0.9rem; }
+
+        .admin-layout { display: flex; min-height: 100vh; }
+        aside { width: 250px; background: var(--card); border-right: 1px solid rgba(255,255,255,0.05); padding: 2rem; display: flex; flex-direction: column; }
+        aside h2 { color: var(--primary); margin-bottom: 2rem; font-size: 1.2rem; }
+        .sidebar-btn { background: none; border: none; color: #a0a0a0; text-align: left; padding: 0.8rem 1rem; border-radius: 0.5rem; cursor: pointer; transition: 0.3s; font-weight: 700; width: 100%; font-family: inherit; font-size: 0.9rem; }
+        .sidebar-btn.active, .sidebar-btn:hover { background: rgba(255,0,76,0.1); color: var(--primary); }
+        .sidebar-btn.danger:hover { background: rgba(255,68,68,0.1); color: #ff4444; }
+        aside .sidebar-bottom { margin-top: auto; }
+        
+        main { flex: 1; padding: 2rem; overflow-y: auto; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .page-header h1 { font-size: 1.8rem; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--card); padding: 1.5rem; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.05); }
+        .stat-card h4 { margin: 0; color: #a0a0a0; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card p { margin: 0.5rem 0 0; font-size: 2rem; font-weight: 900; color: var(--secondary); }
+        .stat-card.primary p { color: var(--primary); }
+
+        table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 1rem; overflow: hidden; margin-bottom: 2rem; }
+        th, td { text-align: left; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        th { background: rgba(255,255,255,0.02); font-size: 0.75rem; color: #a0a0a0; text-transform: uppercase; letter-spacing: 1px; }
+        tr:hover { background: rgba(255,255,255,0.02); }
+        
+        .btn { padding: 0.6rem 1.2rem; border-radius: 0.4rem; border: none; cursor: pointer; font-weight: 700; font-size: 0.8rem; transition: 0.3s; font-family: inherit; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { box-shadow: 0 5px 15px rgba(255,0,76,0.3); }
+        .btn-secondary { background: rgba(255,255,255,0.05); color: white; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+        .btn-danger { background: rgba(255,68,68,0.1); color: #ff4444; border: 1px solid #ff4444; }
+        .btn-danger:hover { background: #ff4444; color: white; }
+        .btn-success { background: rgba(0,255,136,0.1); color: #00ff88; border: 1px solid #00ff88; }
+        
+        .status-pill { padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; }
+        .status-pending { background: rgba(255,165,0,0.1); color: orange; }
+        .status-approved { background: rgba(0,255,0,0.1); color: lime; }
+        .status-rejected { background: rgba(255,0,0,0.1); color: #ff4444; }
+        .status-upcoming { background: rgba(0,242,255,0.1); color: var(--secondary); }
+        .status-completed { background: rgba(255,255,255,0.1); color: #a0a0a0; }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: #a0a0a0; font-size: 0.9rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; color: white; font-family: inherit; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--secondary); }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .checkbox-group { display: flex; align-items: center; gap: 0.5rem; }
+        .checkbox-group input { width: auto; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: none; justify-content: center; align-items: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--card); padding: 2rem; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-header h2 { margin: 0; }
+        .modal-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .modal-footer { display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end; }
+
+        .alert { padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+        .alert-success { background: rgba(0,255,136,0.1); border: 1px solid #00ff88; color: #00ff88; }
+        .alert-error { background: rgba(255,68,68,0.1); border: 1px solid #ff4444; color: #ff4444; }
+        .alert-info { background: rgba(0,242,255,0.1); border: 1px solid var(--secondary); color: var(--secondary); }
+
+        .loading { text-align: center; padding: 2rem; color: #a0a0a0; }
+        .empty-state { text-align: center; padding: 3rem; color: #a0a0a0; }
+
+        select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a0a0a0' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; }
+
+        /* Upload Styles */
+        .upload-container { margin-bottom: 1rem; }
+        .upload-dropzone { border: 2px dashed rgba(255,255,255,0.2); border-radius: 0.8rem; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(0,0,0,0.2); }
+        .upload-dropzone:hover, .upload-dropzone.dragover { border-color: var(--secondary); background: rgba(0,242,255,0.05); }
+        .upload-dropzone-icon { font-size: 2rem; margin-bottom: 0.5rem; color: var(--secondary); }
+        .upload-dropzone-text { color: #a0a0a0; font-size: 0.9rem; }
+        .upload-dropzone-text span { color: var(--secondary); text-decoration: underline; }
+        .upload-dropzone input[type="file"] { display: none; }
+        .upload-preview { margin-top: 1rem; position: relative; }
+        .upload-preview img { max-width: 100%; max-height: 200px; border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.1); }
+        .upload-preview-single img { max-width: 100%; max-height: 150px; border-radius: 0.5rem; }
+        .upload-preview-info { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 0.5rem; margin-top: 0.5rem; }
+        .upload-preview-info img { width: 60px; height: 60px; object-fit: cover; border-radius: 0.3rem; }
+        .upload-preview-info .info { flex: 1; }
+        .upload-preview-info .filename { font-weight: 700; font-size: 0.85rem; }
+        .upload-preview-info .filesize { color: #a0a0a0; font-size: 0.75rem; }
+        .upload-remove { background: rgba(255,68,68,0.1); border: none; color: #ff4444; padding: 0.4rem 0.8rem; border-radius: 0.3rem; cursor: pointer; font-size: 0.75rem; }
+        .upload-remove:hover { background: #ff4444; color: white; }
+        .upload-url-input { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+        .upload-url-input input { flex: 1; }
+        .upload-url-input .btn { padding: 0.6rem 1rem; }
+        .upload-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .upload-tab { padding: 0.5rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; cursor: pointer; font-size: 0.8rem; color: #a0a0a0; transition: all 0.3s; }
+        .upload-tab.active { background: var(--secondary); color: #000; border-color: var(--secondary); }
+        .upload-tab:hover:not(.active) { border-color: var(--secondary); color: var(--secondary); }
+
+        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .settings-card { background: var(--card); padding: 1.5rem; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.05); }
+        .settings-card h3 { margin: 0 0 1rem; color: var(--secondary); font-size: 1rem; }
+        .settings-preview { margin-top: 1rem; }
+        .settings-preview img { max-width: 100%; max-height: 100px; object-fit: contain; border-radius: 0.5rem; background: rgba(255,255,255,0.05); padding: 0.5rem; }
+
+        .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 0.5rem; }
+        .progress-bar-fill { height: 100%; background: var(--secondary); transition: width 0.3s; }
+
+        @media (max-width: 768px) {
+            .admin-layout { flex-direction: column; }
+            aside { width: 100%; padding: 1rem; }
+            .sidebar-btn { padding: 0.6rem; }
+            main { padding: 1rem; }
+            table { font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script src="../env.js"></script>
+    <script type="module">
+        import { authService } from '../src/services/authService.js';
+        import { tournamentService } from '../src/services/tournamentService.js';
+        import { registrationService } from '../src/services/registrationService.js';
+        import { settingsService } from '../src/services/settingsService.js';
+        import { profileService } from '../src/services/profileService.js';
+        import { analyticsService } from '../src/services/analyticsService.js';
+        import { uploadService } from '../src/services/uploadService.js';
+        import { contentService } from '../src/services/contentService.js';
+
+        const app = document.getElementById('app');
+        let currentUser = null;
+        let currentSection = 'dashboard';
+
+        async function init() {
+            currentUser = await authService.getCurrentUser();
+            
+            if (!currentUser || !['admin', 'super_admin', 'manager'].includes(currentUser.profile?.role)) {
+                renderLogin();
+            } else {
+                renderAdmin();
+                loadSection('dashboard');
+            }
+        }
+
+        function renderLogin() {
+            app.innerHTML = `
+                <div class="login-page">
+                    <div class="login-card">
+                        <h1>ADMIN ACCESS</h1>
+                        <form id="login-form">
+                            <input type="email" id="email" placeholder="Admin Email" required>
+                            <input type="password" id="password" placeholder="Password" required>
+                            <button type="submit" class="btn">SECURE LOGIN</button>
+                            <div id="error-msg" class="error"></div>
+                        </form>
+                        <a href="../index.html" class="back-link">← Back to Site</a>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const errorMsg = document.getElementById('error-msg');
+                
+                const { data, error } = await authService.signIn(email, password);
+                
+                if (error) {
+                    errorMsg.textContent = error.message;
+                    errorMsg.style.display = 'block';
+                } else {
+                    currentUser = await authService.getCurrentUser();
+                    if (['admin', 'super_admin', 'manager'].includes(currentUser.profile?.role)) {
+                        renderAdmin();
+                        loadSection('dashboard');
+                    } else {
+                        await authService.signOut();
+                        errorMsg.textContent = 'Unauthorized: Admin access only';
+                        errorMsg.style.display = 'block';
+                    }
+                }
+            });
+        }
+
+        function renderAdmin() {
+            app.innerHTML = `
+                <div class="admin-layout">
+                    <aside>
+                        <h2>⚡ CLASH ADMIN</h2>
+                        <button class="sidebar-btn ${currentSection === 'dashboard' ? 'active' : ''}" onclick="window.loadSection('dashboard')">Dashboard</button>
+                        <button class="sidebar-btn ${currentSection === 'tournaments' ? 'active' : ''}" onclick="window.loadSection('tournaments')">Tournaments</button>
+                        <button class="sidebar-btn ${currentSection === 'registrations' ? 'active' : ''}" onclick="window.loadSection('registrations')">Registrations</button>
+                        <button class="sidebar-btn ${currentSection === 'users' ? 'active' : ''}" onclick="window.loadSection('users')">Users</button>
+                        <button class="sidebar-btn ${currentSection === 'analytics' ? 'active' : ''}" onclick="window.loadSection('analytics')">Analytics</button>
+                        <button class="sidebar-btn ${currentSection === 'settings' ? 'active' : ''}" onclick="window.loadSection('settings')">Site Settings</button>
+                        <button class="sidebar-btn ${currentSection === 'about' ? 'active' : ''}" onclick="window.loadSection('about')">About Content</button>
+                        <button class="sidebar-btn ${currentSection === 'team' ? 'active' : ''}" onclick="window.loadSection('team')">Team Members</button>
+                        <button class="sidebar-btn ${currentSection === 'developer' ? 'active' : ''}" onclick="window.loadSection('developer')">Developer</button>
+                        <button class="sidebar-btn ${currentSection === 'sponsors' ? 'active' : ''}" onclick="window.loadSection('sponsors')">Sponsors</button>
+                        <button class="sidebar-btn ${currentSection === 'faqs' ? 'active' : ''}" onclick="window.loadSection('faqs')">FAQs</button>
+                        <button class="sidebar-btn ${currentSection === 'messages' ? 'active' : ''}" onclick="window.loadSection('messages')">Messages</button>
+                        <div class="sidebar-bottom">
+                            <button class="sidebar-btn danger" onclick="window.handleLogout()">Logout</button>
+                        </div>
+                    </aside>
+                    <main id="main-content">
+                        <div class="loading">Loading...</div>
+                    </main>
+                </div>
+            `;
+        }
+
+        window.loadSection = async function(section) {
+            currentSection = section;
+            document.querySelectorAll('.sidebar-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === section);
+            });
+            
+            const content = document.getElementById('main-content');
+            content.innerHTML = '<div class="loading">Loading...</div>';
+
+            switch (section) {
+                case 'dashboard': await renderDashboard(); break;
+                case 'tournaments': await renderTournaments(); break;
+                case 'registrations': await renderRegistrations(); break;
+                case 'users': await renderUsers(); break;
+                case 'analytics': await renderAnalytics(); break;
+                case 'settings': await renderSettings(); break;
+                case 'about': await renderAbout(); break;
+                case 'team': await renderTeam(); break;
+                case 'developer': await renderDeveloper(); break;
+                case 'sponsors': await renderSponsors(); break;
+                case 'faqs': await renderFAQs(); break;
+                case 'messages': await renderMessages(); break;
+            }
+        };
+
+        async function renderDashboard() {
+            const main = document.getElementById('main-content');
+            const stats = await analyticsService.getStats();
+            const { data: tournaments } = await tournamentService.getAll();
+            const { data: registrations } = await registrationService.getAllRegistrations();
+
+            main.innerHTML = `
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <span style="color:#a0a0a0;">Welcome, ${currentUser.profile?.name || currentUser.email}</span>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Total Tournaments</h4>
+                        <p>${tournaments?.length || 0}</p>
+                    </div>
+                    <div class="stat-card primary">
+                        <h4>Total Registrations</h4>
+                        <p>${registrations?.length || 0}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Page Views</h4>
+                        <p>${stats.totalViews || 0}</p>
+                    </div>
+                    <div class="stat-card primary">
+                        <h4>Registration Clicks</h4>
+                        <p>${stats.totalClicks || 0}</p>
+                    </div>
+                </div>
+
+                <h2 style="margin-bottom:1rem;">Recent Tournaments</h2>
+                <table>
+                    <thead><tr><th>Title</th><th>Game</th><th>Mode</th><th>Status</th><th>Views</th></tr></thead>
+                    <tbody>
+                        ${(tournaments || []).slice(0, 5).map(t => `
+                            <tr>
+                                <td>${t.title} ${t.is_featured ? '⭐' : ''}</td>
+                                <td>${t.game}</td>
+                                <td>${t.mode?.toUpperCase()}</td>
+                                <td><span class="status-pill status-${t.status || 'upcoming'}">${t.status || 'upcoming'}</span></td>
+                                <td>${t.views_count || 0}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function renderTournaments() {
+            const main = document.getElementById('main-content');
+            const { data: tournaments, error } = await tournamentService.getAll();
+
+            main.innerHTML = `
+                <div class="page-header">
+                    <h1>Manage Tournaments</h1>
+                    <button class="btn btn-primary" onclick="window.openTournamentModal()">+ Add Tournament</button>
+                </div>
+                
+                ${error ? `<div class="alert alert-error">Error loading tournaments: ${error.message}</div>` : ''}
+                
+                <table>
+                    <thead><tr><th>Banner</th><th>Title</th><th>Game</th><th>Mode</th><th>Prize</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        ${(tournaments || []).map(t => `
+                            <tr>
+                                <td><img src="${t.banner_url || '../assets/VALORANT.jpg'}" style="width:60px;height:40px;object-fit:cover;border-radius:0.3rem;"></td>
+                                <td>${t.title} ${t.is_featured ? '⭐' : ''}</td>
+                                <td>${t.game}</td>
+                                <td>${t.mode?.toUpperCase()}</td>
+                                <td>${t.prize_pool || 'TBA'}</td>
+                                <td><span class="status-pill status-${t.status || 'upcoming'}">${t.status || 'upcoming'}</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" onclick="window.editTournament('${t.id}')">Edit</button>
+                                    <button class="btn btn-danger" onclick="window.deleteTournament('${t.id}')">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function renderRegistrations() {
+            const main = document.getElementById('main-content');
+            const { data: registrations, error } = await registrationService.getAllRegistrations();
+
+            main.innerHTML = `
+                <div class="page-header">
+                    <h1>Registrations</h1>
+                    <span style="color:#a0a0a0;">${registrations?.length || 0} total</span>
+                </div>
+                
+                ${error ? `<div class="alert alert-error">Error: ${error.message}</div>` : ''}
+                
+                <table>
+                    <thead><tr><th>User</th><th>Tournament</th><th>Team</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        ${(registrations || []).map(r => `
+                            <tr>
+                                <td>${r.profiles?.name || r.profiles?.email || 'Unknown'}</td>
+                                <td>${r.tournaments?.title || 'Unknown'}</td>
+                                <td>${r.team_name || 'N/A'}</td>
+                                <td><span class="status-pill status-${r.verification_status}">${r.verification_status}</span></td>
+                                <td>${new Date(r.created_at).toLocaleDateString()}</td>
+                                <td>
+                                    <button class="btn btn-success" onclick="window.updateRegStatus('${r.id}', 'approved')" ${r.verification_status === 'approved' ? 'disabled' : ''}>✓</button>
+                                    <button class="btn btn-danger" onclick="window.updateRegStatus('${r.id}', 'rejected')" ${r.verification_status === 'rejected' ? 'disabled' : ''}>✗</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function renderUsers() {
+            const main = document.getElementById('main-content');
+            const { data: profiles, error } = await profileService.getAll();
+
+            main.innerHTML = `
+                <div class="page-header">
+                    <h1>User Management</h1>
+                </div>
+                
+                ${error ? `<div class="alert alert-error">Error: ${error.message}</div>` : ''}
+                
+                <table>
+                    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        ${(profiles || []).map(p => `
+                            <tr>
+                                <td>${p.name || '---'}</td>
+                                <td>${p.email}</td>
+                                <td><span class="status-pill status-${p.role === 'super_admin' || p.role === 'admin' ? 'approved' : 'pending'}">${p.role}</span></td>
+                                <td>${new Date(p.created_at).toLocaleDateString()}</td>
+                                <td>
+                                    <select onchange="window.updateUserRole('${p.id}', this.value)" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; padding:0.4rem; border-radius:0.3rem;">
+                                        <option value="user" ${p.role === 'user' ? 'selected' : ''}>User</option>
+                                        <option value="manager" ${p.role === 'manager' ? 'selected' : ''}>Manager</option>
+                                        <option value="admin" ${p.role === 'admin' ? 'selected' : ''}>Admin</option>
+                                        <option value="super_admin" ${p.role === 'super_admin' ? 'selected' : ''}>Super Admin</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function renderAnalytics() {
+            const main = document.getElementById('main-content');
+            const stats = await analyticsService.getStats();
+            const { data: events } = await analyticsService.getRecentEvents(50);
+
+            main.innerHTML = `
+                <div class="page-header">
+                    <h1>Analytics</h1>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Total Views</h4>
+                        <p>${stats.totalViews || 0}</p>
+                    </div>
+                    <div class="stat-card primary">
+                        <h4>Total Clicks</h4>
+                        <p>${stats.totalClicks || 0}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Views Today</h4>
+                        <p>${stats.viewsToday || 0}</p>
+                    </div>
+                    <div class="stat-card primary">
+                        <h4>Clicks Today</h4>
+                        <p>${stats.clicksToday || 0}</p>
+                    </div>
+                </div>
+
+                <h2 style="margin-bottom:1rem;">Recent Events</h2>
+                <table>
+                    <thead><tr><th>Event</th><th>Tournament</th><th>User</th><th>Time</th></tr></thead>
+                    <tbody>
+                        ${(events || []).map(e => `
+                            <tr>
+                                <td><span class="status-pill status-${e.event_type === 'view' ? 'upcoming' : e.event_type === 'click' ? 'pending' : 'approved'}">${e.event_type}</span></td>
+                                <td>${e.tournaments?.title || 'N/A'}</td>
+                                <td>${e.user_id ? e.user_id.substring(0, 8) + '...' : 'Anonymous'}</td>
+                                <td>${new Date(e.created_at).toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function renderSettings() {
+            const main = document.getElementById('main-content');
+            const { data: settings } = await settingsService.getSettings();
+
+            main.innerHTML = `
+                <div class="page-header">
+                    <h1>Site Settings</h1>
+                </div>
+                
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>📝 Text Settings</h3>
+                        <form id="settings-text-form">
+                            <div class="form-group">
+                                <label>Hero Text (Main Title)</label>
+                                <input type="text" name="hero_text" value="${settings?.hero_text || ''}" placeholder="EXPERIENCE THE CLASH">
+                            </div>
+                            <div class="form-group">
+                                <label>Season Badge</label>
+                                <input type="text" name="announcement_text" value="${settings?.announcement_text || ''}" placeholder="SEASON 1">
+                            </div>
+                            <div class="form-group">
+                                <label>Default Prize Pool</label>
+                                <input type="text" name="prize_pool" value="${settings?.prize_pool || ''}" placeholder="₹50,000">
+                            </div>
+                            <div id="text-alert"></div>
+                            <button type="submit" class="btn btn-primary">Save Text Settings</button>
+                        </form>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>🖼️ Logo Settings</h3>
+                        <div class="settings-preview" style="margin-bottom:1rem;">
+                            <img src="${settings?.logo_url || '../assets/chandigarh_university_logo.jpg.jpeg'}" alt="Logo Preview" id="logo-preview">
+                        </div>
+                        <div class="upload-container">
+                            <div class="upload-tabs">
+                                <button type="button" class="upload-tab active" onclick="switchUploadTab(this, 'logo-upload')">Upload File</button>
+                                <button type="button" class="upload-tab" onclick="switchUploadTab(this, 'logo-url')">URL Link</button>
+                            </div>
+                            <div id="logo-upload">
+                                <div class="upload-dropzone" id="logo-dropzone" ondrop="handleDrop(event, 'logo')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('logo-file-input').click()">
+                                    <div class="upload-dropzone-icon">📁</div>
+                                    <div class="upload-dropzone-text">Drop image here or <span>browse</span></div>
+                                    <div style="color:#666;font-size:0.75rem;margin-top:0.5rem;">JPG, PNG, WebP (Max 5MB)</div>
+                                    <input type="file" id="logo-file-input" accept="image/*" onchange="handleFileSelect(event, 'logo')">
+                                </div>
+                                <div id="logo-preview-container"></div>
+                            </div>
+                            <div id="logo-url" style="display:none;">
+                                <div class="upload-url-input">
+                                    <input type="url" id="logo-url-input" value="${settings?.logo_url || ''}" placeholder="https://example.com/logo.png">
+                                    <button type="button" class="btn btn-secondary" onclick="updateLogoPreview()">Apply</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>🎨 Hero Poster</h3>
+                        <div class="settings-preview">
+                            <img src="${settings?.hero_poster_url || '../assets/nav-logo.png'}" alt="Hero Poster Preview" id="hero-poster-preview">
+                        </div>
+                        <div class="upload-container" style="margin-top:1rem;">
+                            <div class="upload-tabs">
+                                <button type="button" class="upload-tab active" onclick="switchUploadTab(this, 'hero-upload')">Upload File</button>
+                                <button type="button" class="upload-tab" onclick="switchUploadTab(this, 'hero-url')">URL Link</button>
+                            </div>
+                            <div id="hero-upload">
+                                <div class="upload-dropzone" id="hero-dropzone" ondrop="handleDrop(event, 'hero')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('hero-file-input').click()">
+                                    <div class="upload-dropzone-icon">📁</div>
+                                    <div class="upload-dropzone-text">Drop image here or <span>browse</span></div>
+                                    <div style="color:#666;font-size:0.75rem;margin-top:0.5rem;">JPG, PNG, WebP (Max 5MB)</div>
+                                    <input type="file" id="hero-file-input" accept="image/*" onchange="handleFileSelect(event, 'hero')">
+                                </div>
+                                <div id="hero-preview-container"></div>
+                            </div>
+                            <div id="hero-url" style="display:none;">
+                                <div class="upload-url-input">
+                                    <input type="url" id="hero-url-input" value="${settings?.hero_poster_url || ''}" placeholder="https://example.com/poster.png">
+                                    <button type="button" class="btn btn-secondary" onclick="updateHeroPreview()">Apply</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('settings-text-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const updates = Object.fromEntries(formData);
+                const alert = document.getElementById('text-alert');
+                
+                const { error } = await settingsService.updateSettings(updates);
+                
+                if (error) {
+                    alert.className = 'alert alert-error';
+                    alert.textContent = 'Error: ' + error.message;
+                } else {
+                    alert.className = 'alert alert-success';
+                    alert.textContent = 'Text settings saved successfully!';
+                }
+            });
+
+            window.switchUploadTab = function(btn, tabId) {
+                const container = btn.closest('.upload-container');
+                container.querySelectorAll('.upload-tab').forEach(t => t.classList.remove('active'));
+                container.querySelectorAll('[id$="-upload"], [id$="-url"]').forEach(d => d.style.display = 'none');
+                btn.classList.add('active');
+                document.getElementById(tabId).style.display = 'block';
+            };
+
+            window.handleDragOver = function(e) {
+                e.preventDefault();
+                e.currentTarget.classList.add('dragover');
+            };
+
+            window.handleDragLeave = function(e) {
+                e.currentTarget.classList.remove('dragover');
+            };
+
+            window.handleDrop = async function(e, type) {
+                e.preventDefault();
+                e.currentTarget.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file) await uploadImage(file, type);
+            };
+
+            window.handleFileSelect = async function(e, type) {
+                const file = e.target.files[0];
+                if (file) await uploadImage(file, type);
+            };
+
+            async function uploadImage(file, type) {
+                const previewContainer = document.getElementById(`${type}-preview-container`);
+                const progressHtml = `
+                    <div class="upload-preview-info">
+                        <div class="info">
+                            <div class="filename">${file.name}</div>
+                            <div class="filesize">Uploading...</div>
+                            <div class="progress-bar"><div class="progress-bar-fill" style="width:0%"></div></div>
+                        </div>
+                    </div>
+                `;
+                previewContainer.innerHTML = progressHtml;
+
+                const { data, error } = await uploadService.uploadFile(file, type === 'logo' ? 'logos' : 'posters');
+
+                if (error) {
+                    previewContainer.innerHTML = `<div class="alert alert-error">${error.message}</div>`;
+                    return;
+                }
+
+                const imageUrl = data.url;
+                previewContainer.innerHTML = `
+                    <div class="upload-preview-single">
+                        <img src="${imageUrl}" alt="Preview">
+                    </div>
+                    <div class="upload-preview-info">
+                        <div class="info">
+                            <div class="filename">${file.name}</div>
+                            <div class="filesize">Uploaded successfully!</div>
+                        </div>
+                        <button type="button" class="upload-remove" onclick="useThisImage('${type}', '${imageUrl}')">Use Image</button>
+                    </div>
+                `;
+            }
+
+            window.useThisImage = async function(type, url) {
+                const updates = type === 'logo' ? { logo_url: url } : { hero_poster_url: url };
+                const { error } = await settingsService.updateSettings(updates);
+                
+                if (!error) {
+                    if (type === 'logo') {
+                        document.getElementById('logo-preview').src = url;
+                        document.getElementById('logo-url-input').value = url;
+                    } else {
+                        document.getElementById('hero-poster-preview').src = url;
+                        document.getElementById('hero-url-input').value = url;
+                    }
+                    document.getElementById(`${type}-preview-container`).innerHTML = '<div class="alert alert-success" style="padding:0.5rem;margin-top:0.5rem;font-size:0.8rem;">✓ Image saved!</div>';
+                }
+            };
+
+            window.updateLogoPreview = async function() {
+                const url = document.getElementById('logo-url-input').value;
+                document.getElementById('logo-preview').src = url;
+                const { error } = await settingsService.updateSettings({ logo_url: url });
+                alert(error ? 'Error saving: ' + error.message : 'Logo URL saved!');
+            };
+
+            window.updateHeroPreview = async function() {
+                const url = document.getElementById('hero-url-input').value;
+                document.getElementById('hero-poster-preview').src = url;
+                const { error } = await settingsService.updateSettings({ hero_poster_url: url });
+                alert(error ? 'Error saving: ' + error.message : 'Hero poster URL saved!');
+            };
+        }
+
+        window.openTournamentModal = async function(id = null) {
+            let tournament = null;
+            if (id) {
+                const { data } = await tournamentService.getById(id);
+                tournament = data;
+            }
+
+            const modal = document.createElement('div');
+            modal.id = 't-modal';
+            modal.className = 'modal-overlay active';
+            modal.innerHTML = `
+                <div class="modal" style="max-width:700px;">
+                    <div class="modal-header">
+                        <h2>${id ? 'Edit' : 'Add'} Tournament</h2>
+                        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+                    </div>
+                    <form id="t-form">
+                        <input type="hidden" name="id" value="${id || ''}">
+                        <input type="hidden" name="banner_url" id="t-banner-url" value="${tournament?.banner_url || ''}">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Title *</label>
+                                <input type="text" name="title" required value="${tournament?.title || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label>Game *</label>
+                                <input type="text" name="game" required value="${tournament?.game || ''}" placeholder="Valorant, BGMI, Free Fire">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Mode</label>
+                                <select name="mode">
+                                    <option value="squad" ${tournament?.mode === 'squad' ? 'selected' : ''}>Squad</option>
+                                    <option value="solo" ${tournament?.mode === 'solo' ? 'selected' : ''}>Solo</option>
+                                    <option value="duo" ${tournament?.mode === 'duo' ? 'selected' : ''}>Duo</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Prize Pool</label>
+                                <input type="text" name="prize_pool" value="${tournament?.prize_pool || ''}" placeholder="₹50,000">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select name="status">
+                                    <option value="upcoming" ${tournament?.status === 'upcoming' ? 'selected' : ''}>Upcoming</option>
+                                    <option value="ongoing" ${tournament?.status === 'ongoing' ? 'selected' : ''}>Ongoing</option>
+                                    <option value="completed" ${tournament?.status === 'completed' ? 'selected' : ''}>Completed</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Start Date</label>
+                                <input type="date" name="start_date" value="${tournament?.start_date?.split('T')[0] || ''}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Registration Link (External)</label>
+                            <input type="url" name="registration_link" value="${tournament?.registration_link || ''}" placeholder="https://...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Banner Image</label>
+                            <div class="upload-tabs">
+                                <button type="button" class="upload-tab active" onclick="switchTournamentTab(this, 'banner-upload')">Upload</button>
+                                <button type="button" class="upload-tab" onclick="switchTournamentTab(this, 'banner-url')">URL</button>
+                            </div>
+                            <div id="banner-upload">
+                                <div class="upload-dropzone" id="t-banner-dropzone" ondrop="handleTournamentDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('t-banner-file').click()">
+                                    <div class="upload-dropzone-icon">📁</div>
+                                    <div class="upload-dropzone-text">Drop banner here or <span>browse</span></div>
+                                    <div style="color:#666;font-size:0.75rem;margin-top:0.5rem;">JPG, PNG, WebP (Max 5MB)</div>
+                                    <input type="file" id="t-banner-file" accept="image/*" onchange="handleTournamentFile(event)">
+                                </div>
+                                <div id="t-banner-preview"></div>
+                            </div>
+                            <div id="banner-url" style="display:none;">
+                                <input type="url" id="t-banner-url-input" value="${tournament?.banner_url || ''}" placeholder="https://example.com/banner.jpg" onchange="updateTournamentBanner(this.value)">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea name="description" placeholder="Tournament details...">${tournament?.description || ''}</textarea>
+                        </div>
+                        
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" name="is_featured" id="is_featured" ${tournament?.is_featured ? 'checked' : ''}>
+                            <label for="is_featured" style="margin:0;">Featured Tournament</label>
+                        </div>
+                        
+                        <div id="t-form-alert"></div>
+                        
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Tournament</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+
+            if (tournament?.banner_url) {
+                document.getElementById('t-banner-preview').innerHTML = `
+                    <div class="upload-preview-single">
+                        <img src="${tournament.banner_url}" alt="Current Banner">
+                    </div>
+                    <div class="upload-preview-info">
+                        <div class="info">
+                            <div class="filename">Current Banner</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            window.switchTournamentTab = function(btn, tabId) {
+                const container = btn.closest('.form-group');
+                container.querySelectorAll('.upload-tab').forEach(t => t.classList.remove('active'));
+                container.querySelectorAll('[id^="banner-"]').forEach(d => d.style.display = 'none');
+                btn.classList.add('active');
+                document.getElementById(tabId).style.display = 'block';
+            };
+
+            window.handleTournamentDrop = async function(e) {
+                e.preventDefault();
+                e.currentTarget.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file) await uploadTournamentBanner(file);
+            };
+
+            window.handleTournamentFile = async function(e) {
+                const file = e.target.files[0];
+                if (file) await uploadTournamentBanner(file);
+            };
+
+            async function uploadTournamentBanner(file) {
+                const preview = document.getElementById('t-banner-preview');
+                preview.innerHTML = `<div class="upload-preview-info"><div class="info"><div class="filename">${file.name}</div><div class="filesize">Uploading...</div></div></div>`;
+
+                const { data, error } = await uploadService.uploadFile(file, 'banners');
+                
+                if (error) {
+                    preview.innerHTML = `<div class="alert alert-error">${error.message}</div>`;
+                    return;
+                }
+
+                document.getElementById('t-banner-url').value = data.url;
+                preview.innerHTML = `
+                    <div class="upload-preview-single">
+                        <img src="${data.url}" alt="Banner Preview">
+                    </div>
+                    <div class="upload-preview-info">
+                        <div class="info">
+                            <div class="filename">${file.name}</div>
+                            <div class="filesize">✓ Uploaded successfully</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            window.updateTournamentBanner = function(url) {
+                document.getElementById('t-banner-url').value = url;
+                const preview = document.getElementById('t-banner-preview');
+                if (url) {
+                    preview.innerHTML = `
+                        <div class="upload-preview-single">
+                            <img src="${url}" alt="Banner Preview">
+                        </div>
+                    `;
+                } else {
+                    preview.innerHTML = '';
+                }
+            };
+
+            document.getElementById('t-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData);
+                data.is_featured = formData.get('is_featured') === 'on';
+                data.banner_url = document.getElementById('t-banner-url').value;
+                
+                const alert = document.getElementById('t-form-alert');
+                
+                if (!data.title || !data.game) {
+                    alert.className = 'alert alert-error';
+                    alert.textContent = 'Title and Game are required!';
+                    return;
+                }
+
+                let result;
+                if (data.id) {
+                    delete data.id;
+                    result = await tournamentService.update(e.target.querySelector('[name="id"]').value, data);
+                } else {
+                    delete data.id;
+                    result = await tournamentService.create(data);
+                }
+
+                if (result.error) {
+                    alert.className = 'alert alert-error';
+                    alert.textContent = 'Error: ' + result.error.message;
+                } else {
+                    modal.remove();
+                    await loadSection('tournaments');
+                }
+            });
+        };
+
+        window.editTournament = function(id) {
+            window.openTournamentModal(id);
+        };
+
+        window.deleteTournament = async function(id) {
+            if (confirm('Are you sure you want to delete this tournament? This action cannot be undone.')) {
+                const { error } = await tournamentService.delete(id);
+                if (error) {
+                    alert('Error: ' + error.message);
+                } else {
+                    await loadSection('tournaments');
+                }
+            }
+        };
+
+        window.updateRegStatus = async function(id, status) {
+            const { error } = await registrationService.updateStatus(id, status);
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                await loadSection('registrations');
+            }
+        };
+
+        window.updateUserRole = async function(userId, newRole) {
+            const { error } = await profileService.updateRole(userId, newRole);
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                alert('Role updated successfully!');
+            }
+        };
+
+        window.handleLogout = async function() {
+            await authService.signOut();
+            renderLogin();
+        };
+
+        // === NEW CONTENT SECTIONS ===
+
+        async function renderAbout() {
+            const main = document.getElementById('main-content');
+            const { data: sections } = await contentService.getAboutContent();
+            main.innerHTML = `
+                <div class="page-header">
+                    <h1>About Content</h1>
+                </div>
+                ${(sections || []).map(s => `
+                    <div style="background:var(--card);padding:1.5rem;border-radius:1rem;margin-bottom:1rem;">
+                        <h3 style="color:var(--secondary);margin-bottom:0.5rem;">${s.section_key}</h3>
+                        <div class="form-group"><label>Title</label><input type="text" id="about-title-${s.section_key}" value="${s.title || ''}"></div>
+                        <div class="form-group"><label>Subtitle</label><input type="text" id="about-subtitle-${s.section_key}" value="${s.subtitle || ''}"></div>
+                        <div class="form-group"><label>Content</label><textarea id="about-content-${s.section_key}" rows="4">${s.content || ''}</textarea></div>
+                        <button class="btn btn-primary" onclick="saveAboutSection('${s.section_key}')">Save Changes</button>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        window.saveAboutSection = async function(sectionKey) {
+            const updates = {
+                title: document.getElementById(`about-title-${sectionKey}`).value,
+                subtitle: document.getElementById(`about-subtitle-${sectionKey}`).value,
+                content: document.getElementById(`about-content-${sectionKey}`).value
+            };
+            const { error } = await contentService.updateAboutSection(sectionKey, updates);
+            alert(error ? 'Error: ' + error.message : 'Saved successfully!');
+        };
+
+        async function renderTeam() {
+            const main = document.getElementById('main-content');
+            const { data: team } = await contentService.getTeamMembers();
+            main.innerHTML = `
+                <div class="page-header">
+                    <h1>Team Members</h1>
+                    <button class="btn btn-primary" onclick="openTeamModal()">+ Add Member</button>
+                </div>
+                <table>
+                    <thead><tr><th>Name</th><th>Role</th><th>Designation</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        ${(team || []).map(m => `
+                            <tr>
+                                <td>${m.name}</td>
+                                <td>${m.role}</td>
+                                <td>${m.designation || '-'}</td>
+                                <td>
+                                    <button class="btn btn-secondary" onclick="editTeamMember('${m.id}')">Edit</button>
+                                    <button class="btn btn-danger" onclick="deleteTeamMember('${m.id}')">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        window.openTeamModal = function(id = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.innerHTML = `
+                <div class="modal">
+                    <div class="modal-header"><h2>${id ? 'Edit' : 'Add'} Team Member</h2><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button></div>
+                    <form id="team-form">
+                        <input type="hidden" id="team-id" value="${id || ''}">
+                        <div class="form-group"><label>Name *</label><input type="text" id="team-name" required></div>
+                        <div class="form-group"><label>Role *</label><input type="text" id="team-role" required placeholder="e.g. Coordinator"></div>
+                        <div class="form-group"><label>Designation</label><input type="text" id="team-designation" placeholder="e.g. Esports Head"></div>
+                        <div class="form-group"><label>Department</label><input type="text" id="team-department" placeholder="e.g. Sports Department"></div>
+                        <div class="form-group"><label>Bio</label><textarea id="team-bio" rows="3"></textarea></div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            document.getElementById('team-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const data = {
+                    name: document.getElementById('team-name').value,
+                    role: document.getElementById('team-role').value,
+                    designation: document.getElementById('team-designation').value,
+                    department: document.getElementById('team-department').value,
+                    bio: document.getElementById('team-bio').value
+                };
+                const idVal = document.getElementById('team-id').value;
+                const result = idVal ? await contentService.updateTeamMember(idVal, data) : await contentService.createTeamMember(data);
+                if (result.error) alert('Error: ' + result.error.message);
+                else { modal.remove(); loadSection('team'); }
+            };
+        };
+
+        window.editTeamMember = function(id) { openTeamModal(id); };
+        window.deleteTeamMember = async function(id) {
+            if (confirm('Delete this team member?')) {
+                await contentService.deleteTeamMember(id);
+                loadSection('team');
+            }
+        };
+
+        async function renderDeveloper() {
+            const main = document.getElementById('main-content');
+            const { data: dev } = await contentService.getDeveloperInfo();
+            main.innerHTML = `
+                <div class="page-header"><h1>Developer Info</h1></div>
+                <div style="background:var(--card);padding:2rem;border-radius:1rem;max-width:600px;">
+                    <div class="form-group"><label>Name *</label><input type="text" id="dev-name" value="${dev?.name || ''}" required></div>
+                    <div class="form-group"><label>Title</label><input type="text" id="dev-title" value="${dev?.title || ''}"></div>
+                    <div class="form-group"><label>Company</label><input type="text" id="dev-company" value="${dev?.company || ''}"></div>
+                    <div class="form-group"><label>Bio</label><textarea id="dev-bio" rows="4">${dev?.bio || ''}</textarea></div>
+                    <div class="form-group"><label>Website URL</label><input type="url" id="dev-website" value="${dev?.website_url || ''}"></div>
+                    <button class="btn btn-primary" onclick="saveDeveloper()">Save Changes</button>
+                </div>
+            `;
+        }
+
+        window.saveDeveloper = async function() {
+            const updates = {
+                name: document.getElementById('dev-name').value,
+                title: document.getElementById('dev-title').value,
+                company: document.getElementById('dev-company').value,
+                bio: document.getElementById('dev-bio').value,
+                website_url: document.getElementById('dev-website').value
+            };
+            const { error } = await contentService.updateDeveloperInfo(updates);
+            alert(error ? 'Error: ' + error.message : 'Saved successfully!');
+        };
+
+        async function renderSponsors() {
+            const main = document.getElementById('main-content');
+            const { data: sponsors } = await contentService.getSponsors();
+            main.innerHTML = `
+                <div class="page-header">
+                    <h1>Sponsors</h1>
+                    <button class="btn btn-primary" onclick="openSponsorModal()">+ Add Sponsor</button>
+                </div>
+                <table>
+                    <thead><tr><th>Name</th><th>Tier</th><th>Website</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        ${(sponsors || []).map(s => `
+                            <tr>
+                                <td>${s.name}</td>
+                                <td><span class="status-pill status-${s.tier}">${s.tier}</span></td>
+                                <td>${s.website_url ? `<a href="${s.website_url}" target="_blank">Link</a>` : '-'}</td>
+                                <td>
+                                    <button class="btn btn-secondary" onclick="editSponsor('${s.id}')">Edit</button>
+                                    <button class="btn btn-danger" onclick="deleteSponsor('${s.id}')">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        window.openSponsorModal = function(id = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.innerHTML = `
+                <div class="modal">
+                    <div class="modal-header"><h2>${id ? 'Edit' : 'Add'} Sponsor</h2><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button></div>
+                    <form id="sponsor-form">
+                        <input type="hidden" id="sponsor-id" value="${id || ''}">
+                        <div class="form-group"><label>Name *</label><input type="text" id="sponsor-name" required></div>
+                        <div class="form-group"><label>Tier</label><select id="sponsor-tier"><option value="platinum">Platinum</option><option value="gold">Gold</option><option value="silver">Silver</option><option value="bronze">Bronze</option></select></div>
+                        <div class="form-group"><label>Website URL</label><input type="url" id="sponsor-url"></div>
+                        <div class="form-group"><label>Description</label><textarea id="sponsor-desc" rows="3"></textarea></div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            document.getElementById('sponsor-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const data = {
+                    name: document.getElementById('sponsor-name').value,
+                    tier: document.getElementById('sponsor-tier').value,
+                    website_url: document.getElementById('sponsor-url').value,
+                    description: document.getElementById('sponsor-desc').value
+                };
+                const idVal = document.getElementById('sponsor-id').value;
+                const result = idVal ? await contentService.updateSponsor(idVal, data) : await contentService.createSponsor(data);
+                if (result.error) alert('Error: ' + result.error.message);
+                else { modal.remove(); loadSection('sponsors'); }
+            };
+        };
+
+        window.editSponsor = function(id) { openSponsorModal(id); };
+        window.deleteSponsor = async function(id) {
+            if (confirm('Delete this sponsor?')) { await contentService.deleteSponsor(id); loadSection('sponsors'); }
+        };
+
+        async function renderFAQs() {
+            const main = document.getElementById('main-content');
+            const { data: faqs } = await contentService.getFAQs();
+            main.innerHTML = `
+                <div class="page-header">
+                    <h1>FAQs</h1>
+                    <button class="btn btn-primary" onclick="openFAQModal()">+ Add FAQ</button>
+                </div>
+                <table>
+                    <thead><tr><th>Question</th><th>Category</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        ${(faqs || []).map(f => `
+                            <tr>
+                                <td>${f.question}</td>
+                                <td>${f.category || 'general'}</td>
+                                <td>
+                                    <button class="btn btn-secondary" onclick="editFAQ('${f.id}')">Edit</button>
+                                    <button class="btn btn-danger" onclick="deleteFAQ('${f.id}')">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        window.openFAQModal = function(id = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.innerHTML = `
+                <div class="modal">
+                    <div class="modal-header"><h2>${id ? 'Edit' : 'Add'} FAQ</h2><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button></div>
+                    <form id="faq-form">
+                        <input type="hidden" id="faq-id" value="${id || ''}">
+                        <div class="form-group"><label>Question *</label><input type="text" id="faq-question" required></div>
+                        <div class="form-group"><label>Answer *</label><textarea id="faq-answer" rows="4" required></textarea></div>
+                        <div class="form-group"><label>Category</label><input type="text" id="faq-category" value="general" placeholder="e.g. registration, prizes"></div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            document.getElementById('faq-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const data = {
+                    question: document.getElementById('faq-question').value,
+                    answer: document.getElementById('faq-answer').value,
+                    category: document.getElementById('faq-category').value
+                };
+                const idVal = document.getElementById('faq-id').value;
+                const result = idVal ? await contentService.updateFAQ(idVal, data) : await contentService.createFAQ(data);
+                if (result.error) alert('Error: ' + result.error.message);
+                else { modal.remove(); loadSection('faqs'); }
+            };
+        };
+
+        window.editFAQ = function(id) { openFAQModal(id); };
+        window.deleteFAQ = async function(id) {
+            if (confirm('Delete this FAQ?')) { await contentService.deleteFAQ(id); loadSection('faqs'); }
+        };
+
+        async function renderMessages() {
+            const main = document.getElementById('main-content');
+            const { data: messages } = await contentService.getContactMessages();
+            main.innerHTML = `
+                <div class="page-header"><h1>Contact Messages</h1><span style="color:#a0a0a0;">${(messages || []).filter(m => !m.is_read).length} unread</span></div>
+                <table>
+                    <thead><tr><th>Name</th><th>Email</th><th>Subject</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        ${(messages || []).map(m => `
+                            <tr style="${!m.is_read ? 'background:rgba(255,0,76,0.05);' : ''}">
+                                <td>${m.name}</td>
+                                <td><a href="mailto:${m.email}">${m.email}</a></td>
+                                <td>${m.subject || '-'}</td>
+                                <td>${new Date(m.created_at).toLocaleDateString()}</td>
+                                <td><span class="status-pill status-${m.is_read ? 'approved' : 'pending'}">${m.is_read ? 'Read' : 'New'}</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" onclick="viewMessage('${m.id}')">View</button>
+                                    <button class="btn btn-danger" onclick="deleteMessage('${m.id}')">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        window.viewMessage = async function(id) {
+            await contentService.markMessageRead(id);
+            const { data: messages } = await contentService.getContactMessages();
+            const msg = messages?.find(m => m.id === id);
+            if (msg) {
+                const modal = document.createElement('div');
+                modal.className = 'modal-overlay active';
+                modal.innerHTML = `
+                    <div class="modal" style="max-width:500px;">
+                        <div class="modal-header"><h2>Message from ${msg.name}</h2><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button></div>
+                        <div style="margin-bottom:1rem;"><strong>Email:</strong> <a href="mailto:${msg.email}">${msg.email}</a></div>
+                        ${msg.phone ? `<div style="margin-bottom:1rem;"><strong>Phone:</strong> ${msg.phone}</div>` : ''}
+                        ${msg.subject ? `<div style="margin-bottom:1rem;"><strong>Subject:</strong> ${msg.subject}</div>` : ''}
+                        <div style="background:rgba(0,0,0,0.2);padding:1rem;border-radius:0.5rem;white-space:pre-wrap;">${msg.message}</div>
+                        <div style="margin-top:1rem;"><strong>Received:</strong> ${new Date(msg.created_at).toLocaleString()}</div>
+                        <div class="modal-footer"><button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove()">Close</button></div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+            loadSection('messages');
+        };
+
+        window.deleteMessage = async function(id) {
+            if (confirm('Delete this message?')) { await contentService.deleteMessage(id); loadSection('messages'); }
+        };
+
+        init();
+    </script>
+</body>
+</html>

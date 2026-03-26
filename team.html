@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management Team | Campus Clash</title>
+    <link rel="stylesheet" href="styles/global.css">
+    <link rel="icon" href="assets/nav-logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <div class="background-overlay"></div>
+    <div id="navbar"></div>
+
+    <main class="page-container">
+        <div class="page-header">
+            <div class="container">
+                <h1>MEET THE TEAM</h1>
+                <p>The people behind Campus Clash</p>
+            </div>
+        </div>
+
+        <section class="team-section">
+            <div class="container">
+                <div class="team-grid" id="team-grid">
+                    <div class="loading" style="text-align:center;padding:60px;color:var(--text-dim);grid-column:1/-1;">Loading team...</div>
+                </div>
+
+                <div class="org-structure">
+                    <h2>Organization Structure</h2>
+                    <div class="org-level">
+                        <div class="org-node highlight">
+                            <h4>Director of Sports</h4>
+                            <p>Leadership</p>
+                        </div>
+                    </div>
+                    <div class="org-level">
+                        <div class="org-node"><h4>Esports Coordinator</h4><p>Operations</p></div>
+                        <div class="org-node"><h4>Event Manager</h4><p>Events</p></div>
+                        <div class="org-node"><h4>Technical Lead</h4><p>Technology</p></div>
+                    </div>
+                    <div class="org-level">
+                        <div class="org-node"><h4>Volunteers</h4><p>Support</p></div>
+                        <div class="org-node"><h4>Content Team</h4><p>Media</p></div>
+                        <div class="org-node"><h4>Social Media</h4><p>Marketing</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container text-center">
+            <p>&copy; 2026 CAMPUS CLASH. ALL RIGHTS RESERVED.</p>
+            <p class="dev-tag">DEVELOPED BY <a href="https://aurixdevelopment.in/" target="_blank" class="aurix-glow">AURIX DEVELOPMENT</a></p>
+        </div>
+    </footer>
+
+    <script src="env.js"></script>
+    <script src="components/navbar.js"></script>
+    <script type="module">
+        import { initModals } from './components/modals.js';
+        initModals();
+    </script>
+    <script type="module">
+        import { contentService } from './src/services/contentService.js';
+
+        async function loadTeam() {
+            const { data: team, error } = await contentService.getTeamMembers();
+            const grid = document.getElementById('team-grid');
+
+            if (error || !team || team.length === 0) {
+                grid.innerHTML = '<p style="text-align:center;color:var(--text-dim);grid-column:1/-1;">No team members found.</p>';
+                return;
+            }
+
+            grid.innerHTML = team.map(member => `
+                <div class="team-card">
+                    <div class="team-avatar">${member.name.charAt(0)}</div>
+                    <h3>${member.name}</h3>
+                    <div class="role">${member.role}</div>
+                    <div class="department">${member.department || member.designation || ''}</div>
+                    <p class="bio">${member.bio || ''}</p>
+                </div>
+            `).join('');
+        }
+
+        loadTeam();
+    </script>
+</body>
+</html>

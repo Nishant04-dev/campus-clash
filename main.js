@@ -1,6 +1,52 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Mouse Glow following
-    // Mouse Glow following with smooth lag and dynamic size
+import { config } from './src/lib/config.js';
+import { authService } from './src/services/authService.js';
+import { tournamentService } from './src/services/tournamentService.js';
+import { settingsService } from './src/services/settingsService.js';
+import { analyticsService } from './src/services/analyticsService.js';
+import { registrationService } from './src/services/registrationService.js';
+
+const API_KEY = config.lumiere.apiKey;
+const ENDPOINT = config.lumiere.endpoint;
+
+let currentUser = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    initMouseGlow();
+    initTiltEffect();
+    initSmoothScroll();
+    initChatWidget();
+    await loadDynamicContent();
+    initHeroAnimation();
+});
+
+window.updateNavigation = updateNavigation;
+
+function updateNavigation() {
+    const authNav = document.getElementById('auth-nav');
+    if (!authNav) return;
+    
+    if (currentUser) {
+        authNav.innerHTML = `
+            <a href="profile.html" class="user-name">
+                <span id="user-nav-name">${currentUser.profile?.name || currentUser.email?.split('@')[0] || 'Profile'}</span>
+            </a>
+            <button class="logout-btn" onclick="handleLogout()">Logout</button>
+        `;
+    } else {
+        authNav.innerHTML = `
+            <a href="#" class="nav-cta" onclick="openAuthModal('signin'); return false;">Sign In</a>
+        `;
+    }
+}
+
+window.handleLogout = async function() {
+    await authService.signOut();
+    currentUser = null;
+    updateNavigation();
+    window.location.href = 'index.html';
+};
+
+function initMouseGlow() {
     const mouseGlow = document.querySelector('.mouse-glow');
     let mouseX = 0, mouseY = 0;
     let glowX = 0, glowY = 0;
@@ -11,22 +57,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function animateGlow() {
-        // Smooth interpolation (lerp)
         glowX += (mouseX - glowX) * 0.1;
         glowY += (mouseY - glowY) * 0.1;
         
-        mouseGlow.style.left = glowX + 'px';
-        mouseGlow.style.top = glowY + 'px';
+        if (mouseGlow) {
+            mouseGlow.style.left = glowX + 'px';
+            mouseGlow.style.top = glowY + 'px';
+        }
         
         requestAnimationFrame(animateGlow);
     }
     animateGlow();
+}
 
-    // Detect Touch Device
+function initTiltEffect() {
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-    // 3D Tilt Effect for Game Cards (Only for Desktop)
     const cards = document.querySelectorAll('.game-card');
+    
     if (!isTouchDevice) {
         cards.forEach(card => {
             card.addEventListener('mousemove', (e) => {
@@ -37,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
                 
-                const rotateX = (y - centerY) / 8; // Slightly more tilt
+                const rotateX = (y - centerY) / 8;
                 const rotateY = (centerX - x) / 8;
                 
                 card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.07, 1.07, 1.07)`;
@@ -51,43 +98,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 500);
             });
         });
-    } else {
-        // Subtle hover state for touch instead of 3D tilt
-        cards.forEach(card => {
-            card.addEventListener('touchstart', () => {
-                card.style.transform = `scale(0.98)`;
-            }, { passive: true });
-            card.addEventListener('touchend', () => {
-                card.style.transform = `scale(1)`;
-            }, { passive: true });
-        });
     }
+}
 
-    // Smooth scrolling for navigation
+function initSmoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
-        });
-    });
-
-    // Section Fade-in on Scroll
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
             }
         });
-    }, observerOptions);
+    });
+}
 
-    // Lumiere AI Chat Integration
+function initChatWidget() {
     const chatWidget = document.getElementById('ai-chat-widget');
     const chatTrigger = document.getElementById('open-chat');
     const closeChat = document.getElementById('close-chat');
@@ -95,33 +121,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendBtn = document.getElementById('send-chat');
     const chatMessages = document.getElementById('chat-messages');
 
-    const API_KEY = 'lum-53d57ae849f739130f251b0b2422e796f4f81f01ef46721f';
-    const ENDPOINT = 'https://hpgljlicaqhesbnjwjab.supabase.co/functions/v1/lumiere-api';
-
-    // Start with an empty history for the API, but keep UI greeting
     let messageHistory = [];
 
-    chatTrigger.addEventListener('click', () => {
-        chatWidget.classList.add('active');
+    chatTrigger?.addEventListener('click', () => {
+        chatWidget?.classList.add('active');
         chatTrigger.style.display = 'none';
-        chatInput.focus();
+        chatInput?.focus();
     });
 
-    closeChat.addEventListener('click', () => {
-        chatWidget.classList.remove('active');
+    closeChat?.addEventListener('click', () => {
+        chatWidget?.classList.remove('active');
         chatTrigger.style.display = 'flex';
     });
 
     async function sendMessage() {
-        const text = chatInput.value.trim();
+        const text = chatInput?.value.trim();
         if (!text) return;
 
-        // Add user message to UI
         addMessage(text, 'user');
         chatInput.value = '';
         messageHistory.push({ role: 'user', content: text });
 
-        // Add loading state
         const loadingMsg = addMessage('Lumiere is thinking...', 'bot loading');
 
         try {
@@ -139,22 +159,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.status === 502) {
-                throw new Error('Server (502) error. The AI model might be temporarily unavailable.');
+                throw new Error('Server unavailable');
             }
 
-            if (!response.ok) throw new Error(`API request failed with status: ${response.status}`);
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
 
             const data = await response.json();
             const botResponse = data.content || data.choices?.[0]?.message?.content || data.reply || "I'm sorry, I couldn't process that.";
 
-            // Remove loading and add bot response
             loadingMsg.remove();
             addMessage(botResponse, 'bot');
             messageHistory.push({ role: 'assistant', content: botResponse });
 
         } catch (error) {
             console.error('Chat Error:', error);
-            loadingMsg.textContent = "Sorry, I'm having trouble connecting right now. Please try again later.";
+            loadingMsg.textContent = "Sorry, I'm having trouble connecting right now.";
             loadingMsg.classList.remove('loading');
         }
     }
@@ -163,18 +182,76 @@ document.addEventListener('DOMContentLoaded', () => {
         const div = document.createElement('div');
         div.className = `message ${type}`;
         div.textContent = text;
-        chatMessages.appendChild(div);
+        chatMessages?.appendChild(div);
         chatMessages.scrollTop = chatMessages.scrollHeight;
         return div;
     }
 
-    sendBtn.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keypress', (e) => {
+    sendBtn?.addEventListener('click', sendMessage);
+    chatInput?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
+}
 
-    // --- Hero Scroll Animation ---
+// Modals are now handled by components/modals.js
+
+async function loadDynamicContent() {
+    console.log('Campus Clash: Loading dynamic content...');
+    
+    try {
+        const { data: settings } = await settingsService.getSettings();
+        if (settings) {
+            if (settings.hero_text) {
+                const scrollTitle = document.querySelector('.scroll-title');
+                if (scrollTitle) scrollTitle.textContent = settings.hero_text;
+            }
+            if (settings.logo_url) {
+                const logo = document.querySelector('.cu-logo-large');
+                if (logo) logo.src = settings.logo_url;
+            }
+            if (settings.announcement_text) {
+                const badge = document.getElementById('season-badge');
+                if (badge) badge.textContent = settings.announcement_text;
+            }
+            if (settings.prize_pool) {
+                const prize = document.getElementById('prize-pool-display');
+                if (prize) prize.textContent = settings.prize_pool;
+            }
+            if (settings.hero_poster_url) {
+                const poster = document.querySelector('.hero-poster');
+                if (poster) poster.src = settings.hero_poster_url;
+            }
+        }
+
+        const { data: tournaments } = await tournamentService.getAll();
+        const grid = document.getElementById('game-grid');
+        
+        if (tournaments && tournaments.length > 0 && grid) {
+            grid.innerHTML = tournaments.map(t => `
+                <div class="game-card ${t.game?.toLowerCase().replace(/\s/g, '') || 'default'}">
+                    <div class="card-bg" style="background-image: linear-gradient(to top, var(--bg-dark), transparent), url('${t.banner_url || 'assets/VALORANT.jpg'}')"></div>
+                    <div class="card-content">
+                        <h3>${t.title || t.game}</h3>
+                        <p>${t.game || 'Game'} | ${(t.mode || 'Squad').toUpperCase()}</p>
+                        <p style="color:var(--secondary); font-size:0.8rem; margin-bottom:10px;">${t.prize_pool || 'Prize TBA'}</p>
+                        <button class="btn btn-primary" onclick="window.openReg('${t.id}', '${t.title}', '${t.registration_link || ''}', '${t.game}', '${t.mode}')">REGISTER</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            tournaments.forEach(t => analyticsService.trackView(t.id));
+            initTiltEffect();
+            console.log('Campus Clash: Content loaded successfully.');
+        }
+    } catch (err) {
+        console.error('Campus Clash: Error loading content:', err);
+    }
+}
+
+function initHeroAnimation() {
     const canvas = document.getElementById('hero-canvas');
+    if (!canvas) return;
+    
     const context = canvas.getContext('2d');
     const scrollContainer = document.querySelector('.scroll-container');
     const scrollTitle = document.querySelector('.scroll-title');
@@ -190,7 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const images = [];
     let airship = { frame: 0, targetFrame: 0 };
 
-    // Preload images with progress reporting
     let loadedCount = 0;
     for (let i = 1; i <= frameCount; i++) {
         const img = new Image();
@@ -198,14 +274,14 @@ document.addEventListener('DOMContentLoaded', () => {
         img.onload = () => {
             loadedCount++;
             const progress = Math.round((loadedCount / frameCount) * 100);
-            loaderBar.style.width = `${progress}%`;
-            loaderText.textContent = `PRELOADING ASSETS... ${progress}%`;
+            if (loaderBar) loaderBar.style.width = `${progress}%`;
+            if (loaderText) loaderText.textContent = `PRELOADING ASSETS... ${progress}%`;
             
             if (loadedCount === frameCount) {
                 setTimeout(() => {
-                    loaderOverlay.classList.add('fade-out');
-                    render(); // Initial render
-                    requestAnimationFrame(animate); // Start smooth loop
+                    loaderOverlay?.classList.add('fade-out');
+                    render();
+                    requestAnimationFrame(animate);
                 }, 500);
             }
         };
@@ -247,7 +323,6 @@ document.addEventListener('DOMContentLoaded', () => {
         context.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
     }
 
-    // Smooth Interpolation (Lerp)
     function animate() {
         const lerpFactor = 0.1;
         const diff = airship.targetFrame - airship.frame;
@@ -260,19 +335,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.addEventListener('scroll', () => {
+        if (!scrollContainer || !scrollTitle) return;
+        
         const scrollTop = window.scrollY;
         const containerOffset = scrollContainer.offsetTop;
         const containerHeight = scrollContainer.offsetHeight;
         
-        // Calculate progress relative to the scroll container
         const relativeScroll = scrollTop - containerOffset;
         const maxScroll = containerHeight - window.innerHeight;
         const scrollFraction = Math.max(0, Math.min(1, relativeScroll / maxScroll));
         
         airship.targetFrame = scrollFraction * (frameCount - 1);
 
-        // Title Animation
-        if (scrollFraction > 0.2 && scrollFraction < 0.8) {
+        if (scrollFraction > 0.1 && scrollFraction < 0.9) {
             scrollTitle.style.opacity = '1';
             scrollTitle.style.transform = 'translateY(0)';
         } else {
@@ -280,4 +355,4 @@ document.addEventListener('DOMContentLoaded', () => {
             scrollTitle.style.transform = 'translateY(50px)';
         }
     });
-});
+}

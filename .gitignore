@@ -1,0 +1,22 @@
+# Environment files (contains secrets)
+.env
+env.js
+
+# Keep example files
+!env.example
+!env.example.js
+
+# Dependencies
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build output
+dist/
+build/
