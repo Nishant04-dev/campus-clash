@@ -992,3 +992,12 @@ footer p {
         border-radius: 0;
     }
 }
+
+.ad-native {
+  width: 100%;
+  min-height: 250px;
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
