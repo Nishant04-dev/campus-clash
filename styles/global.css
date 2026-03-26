@@ -27,6 +27,8 @@ html, body {
     overflow-x: hidden;
     width: 100%;
     line-height: 1.6;
+    margin: 0;
+    padding: 0;
 }
 
 img {
@@ -37,6 +39,8 @@ img {
 
 html {
     scroll-behavior: smooth;
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -46,6 +50,8 @@ body {
     overflow-x: hidden;
     line-height: 1.6;
     min-height: 100vh;
+    padding-top: 0 !important;
+    margin: 0;
 }
 
 a {
@@ -62,7 +68,7 @@ a {
 
 .page-container {
     max-width: 1200px;
-    margin: 100px auto 60px;
+    margin: 100px auto 60px; /* Spacing only below animation */
     padding: 0 20px;
     width: 100%;
     position: relative;
@@ -86,7 +92,7 @@ a {
     background: rgba(10, 10, 10, 0.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    z-index: 9999;
+    z-index: 1000;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
